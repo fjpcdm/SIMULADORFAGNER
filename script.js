@@ -329,22 +329,14 @@ const cssStyles = `
 
   .maplibregl-marker {
     z-index: 999999 !important;
+    pointer-events: none !important;
   }
 
-  .bus-marker-container {
-    width: 40px !important;
-    height: 80px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    position: relative !important;
-  }
-
-  .bus-marker-svg {
-    width: 40px !important;
-    height: 80px !important;
-    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.9));
+  .bus-marker-img {
+    width: 44px !important;
+    height: 88px !important;
     display: block !important;
+    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.9));
   }
 
   @media (max-width: 1024px) {
@@ -575,6 +567,21 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   initMap(startCoords);
 });
 
+function getBusSvgDataUrl(bodyColor, stripeColor) {
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200" width="100" height="200">
+    <rect x="5" y="5" width="90" height="190" rx="20" fill="#1e293b" stroke="#ffffff" stroke-width="6"/>
+    <path d="M 5,25 C 5,12 12,5 25,5 L 75,5 C 88,5 95,12 95,25 L 95,140 L 5,140 Z" fill="${bodyColor}" />
+    <path d="M 5,140 L 95,140 L 95,175 C 95,188 88,195 75,195 L 25,195 C 12,195 5,188 5,175 Z" fill="${stripeColor}" />
+    <rect x="2" y="30" width="6" height="20" rx="2" fill="#000000"/>
+    <rect x="92" y="30" width="6" height="20" rx="2" fill="#000000"/>
+    <path d="M 10,18 Q 50,10 90,18 L 90,50 Q 50,45 10,50 Z" fill="#0f172a"/>
+    <path d="M 14,21 Q 50,15 86,21 L 86,45 Q 50,40 14,45 Z" fill="#38bdf8"/>
+    <rect x="25" y="12" width="50" height="6" rx="2" fill="#f59e0b"/>
+    <rect x="20" y="80" width="60" height="40" rx="6" fill="#334155"/>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svgString);
+}
+
 function initMap(startCoords) {
   map = new maplibregl.Map({
     container: 'map',
@@ -603,25 +610,12 @@ function initMap(startCoords) {
   });
 
   const preset = COLOR_PRESETS[activePresetKey] || COLOR_PRESETS['vermelho'];
-
-  const busEl = document.createElement('div');
-  busEl.className = 'bus-marker-container';
-  busEl.innerHTML = `
-    <svg class="bus-marker-svg" id="busSvg" viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="5" width="90" height="210" rx="18" fill="#d1d5db" stroke="#000000" stroke-width="4"/>
-      <path d="M 5,23 C 5,12 12,5 23,5 L 77,5 C 88,5 95,12 95,23 L 95,155 L 5,155 Z" fill="${preset.bodyColor}" />
-      <path d="M 5,155 L 95,155 L 95,197 C 95,208 88,215 77,215 L 23,215 C 12,215 5,208 5,208 Z" fill="${preset.stripeColor}" />
-      <path d="M 1,32 L 6,32 L 6,48 L 1,48 Z" fill="#0f172a"/>
-      <path d="M 94,32 L 99,32 L 99,48 L 94,48 Z" fill="#0f172a"/>
-      <path d="M 8,20 Q 50,12 92,20 L 92,52 Q 50,48 8,52 Z" fill="#0f172a"/>
-      <path d="M 12,23 Q 50,17 88,23 L 88,46 Q 50,42 12,46 Z" fill="#38bdf8" opacity="0.85"/>
-      <rect x="26" y="16" width="48" height="6" rx="2" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
-      <rect x="28" y="90" width="44" height="40" rx="6" fill="#475569" stroke="#334155" stroke-width="2"/>
-    </svg>
-  `;
+  const busImg = document.createElement('img');
+  busImg.className = 'bus-marker-img';
+  busImg.src = getBusSvgDataUrl(preset.bodyColor, preset.stripeColor);
 
   busMarker = new maplibregl.Marker({ 
-    element: busEl, 
+    element: busImg, 
     anchor: 'center' 
   })
     .setLngLat(startCoords)
@@ -820,3 +814,4 @@ window.addEventListener('keyup', (e) => {
   if (['ArrowLeft', 'KeyA'].includes(e.code)) keysPressed.Left = false;
   if (['ArrowRight', 'KeyD'].includes(e.code)) keysPressed.Right = false;
 });
+
