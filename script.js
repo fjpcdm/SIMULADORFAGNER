@@ -92,6 +92,7 @@ const cssStyles = `
     top: 0;
     left: 0;
     pointer-events: none;
+    z-index: 1;
   }
 
   .map-instruction-banner {
@@ -118,7 +119,7 @@ const cssStyles = `
     position: absolute !important;
     top: 15px !important;
     left: 15px !important;
-    z-index: 99999 !important;
+    z-index: 999999 !important;
     background: rgba(15, 23, 42, 0.95) !important;
     color: #ffffff !important;
     padding: 12px !important;
@@ -127,7 +128,7 @@ const cssStyles = `
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8) !important;
     width: 260px;
     max-width: calc(100vw - 30px);
-    pointer-events: auto;
+    pointer-events: auto !important;
   }
 
   .hud h2 {
@@ -190,6 +191,7 @@ const cssStyles = `
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1rem;
+    touch-action: manipulation;
   }
 
   .trip-status-badge {
@@ -227,6 +229,7 @@ const cssStyles = `
     border: 1px solid #60a5fa;
     border-radius: 6px;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   .btn-zoom.active {
@@ -239,7 +242,7 @@ const cssStyles = `
     position: absolute !important;
     bottom: 20px !important;
     left: 20px !important;
-    z-index: 99999 !important;
+    z-index: 999999 !important;
     background: rgba(10, 15, 25, 0.98) !important;
     color: #38bdf8 !important;
     padding: 15px 30px !important;
@@ -251,7 +254,7 @@ const cssStyles = `
     display: flex;
     align-items: baseline;
     gap: 6px;
-    pointer-events: auto;
+    pointer-events: auto !important;
     letter-spacing: -1px;
   }
 
@@ -266,21 +269,21 @@ const cssStyles = `
     position: absolute !important;
     bottom: 25px !important;
     left: 15px !important;
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     display: flex !important;
     gap: 15px !important;
-    pointer-events: auto;
+    pointer-events: auto !important;
   }
 
   .mobile-controls-right {
     position: absolute !important;
     bottom: 25px !important;
     right: 15px !important;
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
-    pointer-events: auto;
+    pointer-events: auto !important;
   }
 
   .btn-ctrl {
@@ -299,6 +302,7 @@ const cssStyles = `
     box-shadow: 0 5px 15px rgba(0,0,0,0.7);
     -webkit-tap-highlight-color: transparent;
     touch-action: none;
+    pointer-events: auto !important;
   }
 
   .btn-ctrl.active-ctrl {
@@ -317,7 +321,7 @@ const cssStyles = `
     border-radius: 8px;
     font-weight: bold;
     font-size: 0.9rem;
-    z-index: 1000000;
+    z-index: 10000000;
     box-shadow: 0 5px 20px rgba(0,0,0,0.6);
     text-align: center;
     display: none;
@@ -633,7 +637,8 @@ function updatePaxStatus() {
   }
 }
 
-document.getElementById('btnPaxAdd').addEventListener('click', () => {
+document.getElementById('btnPaxAdd').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
   if (passengerCount < maxPassengers) {
     passengerCount++;
     updatePaxStatus();
@@ -642,7 +647,8 @@ document.getElementById('btnPaxAdd').addEventListener('click', () => {
   }
 });
 
-document.getElementById('btnPaxSub').addEventListener('click', () => {
+document.getElementById('btnPaxSub').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
   if (passengerCount > 0) {
     passengerCount--;
     updatePaxStatus();
@@ -722,14 +728,16 @@ function updatePhysics() {
   requestAnimationFrame(updatePhysics);
 }
 
-document.getElementById('btnZoomNear').addEventListener('click', () => {
+document.getElementById('btnZoomNear').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
   currentZoom = CAMERA_SETTINGS.NEAR.zoom;
   currentPitch = CAMERA_SETTINGS.NEAR.pitch;
   document.getElementById('btnZoomNear').classList.add('active');
   document.getElementById('btnZoomFar').classList.remove('active');
 });
 
-document.getElementById('btnZoomFar').addEventListener('click', () => {
+document.getElementById('btnZoomFar').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
   currentZoom = CAMERA_SETTINGS.FAR.zoom;
   currentPitch = CAMERA_SETTINGS.FAR.pitch;
   document.getElementById('btnZoomFar').classList.add('active');
@@ -741,7 +749,8 @@ function bindControl(btnId, keyName) {
   if (!btn) return;
 
   const start = (e) => {
-    e.preventDefault();
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
     keysPressed[keyName] = true;
     btn.classList.add('active-ctrl');
     if (keyName === 'Up') {
@@ -750,13 +759,15 @@ function bindControl(btnId, keyName) {
   };
 
   const end = (e) => {
-    e.preventDefault();
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
     keysPressed[keyName] = false;
     btn.classList.remove('active-ctrl');
   };
 
   btn.addEventListener('touchstart', start, { passive: false });
   btn.addEventListener('touchend', end, { passive: false });
+  btn.addEventListener('touchcancel', end, { passive: false });
   btn.addEventListener('pointerdown', start);
   btn.addEventListener('pointerup', end);
   btn.addEventListener('pointercancel', end);
