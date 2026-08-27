@@ -333,10 +333,10 @@ const cssStyles = `
   }
 
   .bus-marker-img {
-    width: 60px !important;
-    height: 120px !important;
+    width: 55px !important;
+    height: 110px !important;
     display: block !important;
-    filter: drop-shadow(0px 10px 15px rgba(0, 0, 0, 0.95));
+    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.95));
   }
 `;
 
@@ -451,8 +451,8 @@ hudContainer.innerHTML = `
   <div class="trip-status-badge stopped" id="tripStatusBadge">Aguardando Passageiro</div>
 
   <div class="zoom-controls">
-    <button id="btnZoomNear" class="btn-zoom active">🔍 Perto (Panorâmico)</button>
-    <button id="btnZoomFar" class="btn-zoom">🌐 Longe (Encaixado)</button>
+    <button id="btnZoomNear" class="btn-zoom active">🔍 Perto</button>
+    <button id="btnZoomFar" class="btn-zoom">🌐 Longe</button>
   </div>
 `;
 
@@ -481,8 +481,9 @@ document.body.appendChild(speedBox);
 let map = null;
 let busMarker = null;
 
+// Limites seguros de zoom para evitar o sumiço do mapa
 const CAMERA_SETTINGS = {
-  NEAR: { zoom: 20.0, pitch: 0 }, 
+  NEAR: { zoom: 19.5, pitch: 0 }, 
   FAR: { zoom: 17.5, pitch: 0 }
 };
 
@@ -562,7 +563,8 @@ function initMap(startCoords) {
         'google-hybrid': {
           type: 'raster',
           tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'],
-          tileSize: 256
+          tileSize: 256,
+          maxzoom: 19 // Limita o carregamento para não exceder o acervo de fotos do Google
         }
       },
       layers: [{
@@ -576,6 +578,7 @@ function initMap(startCoords) {
     center: startCoords,
     zoom: currentZoom,
     pitch: currentPitch,
+    maxZoom: 19.8, // Evita zoom manual excessivo que apague o mapa
     bearing: 0
   });
 
