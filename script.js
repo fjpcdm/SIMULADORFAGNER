@@ -329,16 +329,20 @@ const cssStyles = `
 
   .maplibregl-marker {
     display: block !important;
-    will-change: transform;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    will-change: transform !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .bus-marker-container {
     width: 32px !important;
     height: 70px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: block !important;
     position: relative !important;
+    overflow: visible !important;
   }
 
   .bus-marker-svg {
@@ -346,7 +350,7 @@ const cssStyles = `
     height: 68px !important;
     filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.85));
     display: block !important;
-    transform-origin: center center;
+    transform-origin: center center !important;
   }
 
   @media (max-width: 1024px) {
@@ -622,7 +626,7 @@ function initMap(startCoords) {
     </svg>
   `;
 
-  busMarker = new maplibregl.Marker({ element: busEl })
+  busMarker = new maplibregl.Marker({ element: busEl, anchor: 'center' })
     .setLngLat(startCoords)
     .addTo(map);
 
