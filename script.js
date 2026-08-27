@@ -126,13 +126,13 @@ const cssStyles = `
     border-radius: 12px !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8) !important;
-    width: 260px;
+    width: 240px;
     max-width: calc(100vw - 30px);
     pointer-events: auto !important;
   }
 
   .hud h2 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-bottom: 6px;
     text-align: center;
     color: #f59e0b;
@@ -222,7 +222,7 @@ const cssStyles = `
   .btn-zoom {
     flex: 1;
     padding: 6px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
     color: #ffffff;
     background: #3b82f6;
@@ -245,9 +245,9 @@ const cssStyles = `
     z-index: 999999 !important;
     background: rgba(10, 15, 25, 0.98) !important;
     color: #38bdf8 !important;
-    padding: 15px 30px !important;
-    border-radius: 30px !important;
-    font-size: 2.2rem !important;
+    padding: 10px 24px !important;
+    border-radius: 25px !important;
+    font-size: 1.8rem !important;
     font-weight: 800 !important;
     border: 3px solid #38bdf8 !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
@@ -259,7 +259,7 @@ const cssStyles = `
   }
 
   .speed-unit {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #94a3b8;
     letter-spacing: 0;
@@ -267,32 +267,32 @@ const cssStyles = `
 
   .mobile-controls-left {
     position: absolute !important;
-    bottom: 25px !important;
+    bottom: 20px !important;
     left: 15px !important;
     z-index: 9999999 !important;
     display: flex !important;
-    gap: 15px !important;
+    gap: 12px !important;
     pointer-events: auto !important;
   }
 
   .mobile-controls-right {
     position: absolute !important;
-    bottom: 25px !important;
+    bottom: 20px !important;
     right: 15px !important;
     z-index: 9999999 !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 10px !important;
     pointer-events: auto !important;
   }
 
   .btn-ctrl {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     background: rgba(255, 255, 255, 0.95) !important;
     border: 3px solid #38bdf8 !important;
     border-radius: 50% !important;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #0f172a;
     cursor: pointer;
@@ -328,45 +328,15 @@ const cssStyles = `
   }
 
   .maplibregl-marker {
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     pointer-events: none !important;
   }
 
   .bus-marker-img {
-    width: 44px !important;
-    height: 88px !important;
+    width: 60px !important;
+    height: 120px !important;
     display: block !important;
-    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.9));
-  }
-
-  @media (max-width: 1024px) {
-    .map-instruction-banner {
-      top: 10px !important;
-      font-size: 0.8rem !important;
-      padding: 8px 14px !important;
-      width: 90% !important;
-    }
-
-    .speedometer-container {
-      bottom: auto !important;
-      top: 15px !important;
-      right: 15px !important;
-      left: auto !important;
-      transform: none !important;
-      font-size: 1.5rem !important;
-      padding: 6px 16px !important;
-      border-width: 2px !important;
-      border-radius: 20px !important;
-    }
-
-    .hud {
-      width: 220px;
-    }
-
-    .btn-ctrl {
-      width: 55px;
-      height: 55px;
-    }
+    filter: drop-shadow(0px 10px 15px rgba(0, 0, 0, 0.95));
   }
 `;
 
@@ -407,13 +377,13 @@ const LINES_DATA = {
 };
 
 const COLOR_PRESETS = {
-  'vermelho': { name: 'Vermelho', bodyColor: '#dc2626', stripeColor: '#e2e8f0' },
-  'azul': { name: 'Azul', bodyColor: '#2563eb', stripeColor: '#e2e8f0' },
-  'laranja': { name: 'Laranja', bodyColor: '#ea580c', stripeColor: '#e2e8f0' },
-  'amarelo': { name: 'Amarelo', bodyColor: '#eab308', stripeColor: '#e2e8f0' },
-  'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#e2e8f0' },
-  'branco': { name: 'Branco', bodyColor: '#f8fafc', stripeColor: '#cbd5e1' },
-  'roxo_branco': { name: 'Roxo e Branco', bodyColor: '#7c3aed', stripeColor: '#f8fafc' },
+  'vermelho': { name: 'Vermelho', bodyColor: '#dc2626', stripeColor: '#ffffff' },
+  'azul': { name: 'Azul', bodyColor: '#2563eb', stripeColor: '#ffffff' },
+  'laranja': { name: 'Laranja', bodyColor: '#ea580c', stripeColor: '#ffffff' },
+  'amarelo': { name: 'Amarelo', bodyColor: '#eab308', stripeColor: '#ffffff' },
+  'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#ffffff' },
+  'branco': { name: 'Branco', bodyColor: '#f8fafc', stripeColor: '#94a3b8' },
+  'roxo_branco': { name: 'Roxo e Branco', bodyColor: '#7c3aed', stripeColor: '#ffffff' },
   'verde_preto': { name: 'Verde e Preto', bodyColor: '#15803d', stripeColor: '#0f172a' },
   'cinza_azul': { name: 'Cinza com Azul', bodyColor: '#64748b', stripeColor: '#0284c7' }
 };
@@ -512,8 +482,8 @@ let map = null;
 let busMarker = null;
 
 const CAMERA_SETTINGS = {
-  NEAR: { zoom: 19.0, pitch: 0 }, 
-  FAR: { zoom: 16.5, pitch: 0 }
+  NEAR: { zoom: 20.0, pitch: 0 }, 
+  FAR: { zoom: 17.5, pitch: 0 }
 };
 
 let currentZoom = CAMERA_SETTINGS.NEAR.zoom;
@@ -568,16 +538,16 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
 });
 
 function getBusSvgDataUrl(bodyColor, stripeColor) {
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200" width="100" height="200">
-    <rect x="5" y="5" width="90" height="190" rx="20" fill="#1e293b" stroke="#ffffff" stroke-width="6"/>
-    <path d="M 5,25 C 5,12 12,5 25,5 L 75,5 C 88,5 95,12 95,25 L 95,140 L 5,140 Z" fill="${bodyColor}" />
-    <path d="M 5,140 L 95,140 L 95,175 C 95,188 88,195 75,195 L 25,195 C 12,195 5,188 5,175 Z" fill="${stripeColor}" />
-    <rect x="2" y="30" width="6" height="20" rx="2" fill="#000000"/>
-    <rect x="92" y="30" width="6" height="20" rx="2" fill="#000000"/>
-    <path d="M 10,18 Q 50,10 90,18 L 90,50 Q 50,45 10,50 Z" fill="#0f172a"/>
-    <path d="M 14,21 Q 50,15 86,21 L 86,45 Q 50,40 14,45 Z" fill="#38bdf8"/>
-    <rect x="25" y="12" width="50" height="6" rx="2" fill="#f59e0b"/>
-    <rect x="20" y="80" width="60" height="40" rx="6" fill="#334155"/>
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 240" width="120" height="240">
+    <rect x="5" y="5" width="110" height="230" rx="22" fill="#000000" stroke="#f59e0b" stroke-width="6"/>
+    <path d="M 10,25 C 10,14 18,8 30,8 L 90,8 C 102,8 110,14 110,25 L 110,160 L 10,160 Z" fill="${bodyColor}" />
+    <path d="M 10,160 L 110,160 L 110,210 C 110,222 102,230 90,230 L 30,230 C 18,230 10,222 10,210 Z" fill="${stripeColor}" />
+    <rect x="0" y="35" width="8" height="25" rx="3" fill="#000000"/>
+    <rect x="112" y="35" width="8" height="25" rx="3" fill="#000000"/>
+    <path d="M 15,20 Q 60,12 105,20 L 105,60 Q 60,54 15,60 Z" fill="#0f172a"/>
+    <path d="M 18,24 Q 60,17 102,24 L 102,54 Q 60,48 18,54 Z" fill="#38bdf8"/>
+    <rect x="30" y="14" width="60" height="8" rx="3" fill="#f59e0b"/>
+    <rect x="25" y="95" width="70" height="45" rx="8" fill="#334155" stroke="#ffffff" stroke-width="2"/>
   </svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svgString);
 }
@@ -814,4 +784,3 @@ window.addEventListener('keyup', (e) => {
   if (['ArrowLeft', 'KeyA'].includes(e.code)) keysPressed.Left = false;
   if (['ArrowRight', 'KeyD'].includes(e.code)) keysPressed.Right = false;
 });
-
