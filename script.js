@@ -481,10 +481,9 @@ document.body.appendChild(speedBox);
 let map = null;
 let busMarker = null;
 
-// Limites seguros de zoom para evitar o sumiço do mapa
 const CAMERA_SETTINGS = {
-  NEAR: { zoom: 19.5, pitch: 0 }, 
-  FAR: { zoom: 17.5, pitch: 0 }
+  NEAR: { zoom: 18.5, pitch: 0 }, 
+  FAR: { zoom: 16.5, pitch: 0 }
 };
 
 let currentZoom = CAMERA_SETTINGS.NEAR.zoom;
@@ -560,25 +559,43 @@ function initMap(startCoords) {
     style: {
       version: 8,
       sources: {
-        'google-hybrid': {
+        'sat-layer-source': {
           type: 'raster',
-          tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'],
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+          ],
           tileSize: 256,
-          maxzoom: 19 // Limita o carregamento para não exceder o acervo de fotos do Google
+          maxzoom: 19
+        },
+        'osm-fallback-source': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          maxzoom: 19
         }
       },
-      layers: [{
-        id: 'hybrid-layer',
-        type: 'raster',
-        source: 'google-hybrid',
-        minzoom: 0,
-        maxzoom: 22
-      }]
+      layers: [
+        {
+          id: 'osm-fallback-layer',
+          type: 'raster',
+          source: 'osm-fallback-source',
+          minzoom: 0,
+          maxzoom: 22
+        },
+        {
+          id: 'sat-layer',
+          type: 'raster',
+          source: 'sat-layer-source',
+          minzoom: 0,
+          maxzoom: 22
+        }
+      ]
     },
     center: startCoords,
     zoom: currentZoom,
     pitch: currentPitch,
-    maxZoom: 19.8, // Evita zoom manual excessivo que apague o mapa
+    maxZoom: 20,
     bearing: 0
   });
 
