@@ -91,7 +91,7 @@ const cssStyles = `
     position: absolute;
     top: 0;
     left: 0;
-    pointer-events: none;
+    pointer-events: auto !important;
     z-index: 1;
   }
 
@@ -335,6 +335,7 @@ const cssStyles = `
     will-change: transform !important;
     opacity: 1 !important;
     visibility: visible !important;
+    z-index: 9999 !important;
   }
 
   .bus-marker-container {
