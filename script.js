@@ -353,9 +353,10 @@ const cssStyles = `
 
     .speedometer-container {
       bottom: auto !important;
-      top: 65px !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
+      top: 15px !important;
+      right: 15px !important;
+      left: auto !important;
+      transform: none !important;
       font-size: 1.5rem !important;
       padding: 6px 16px !important;
       border-width: 2px !important;
@@ -532,12 +533,15 @@ let busLat = 0;
 let speed = 0;
 let heading = 0;
 let distanceCoveredKm = 0;
+let reverseDelayCounter = 0;
 
 const KMH_CONVERSION_FACTOR = 8.33; 
 const CRUISE_SPEED_KMH = 8;
 const CRUISE_SPEED_UNITS = CRUISE_SPEED_KMH / KMH_CONVERSION_FACTOR; 
 const MAX_SPEED_KMH = 60;
 const MAX_SPEED_UNITS = MAX_SPEED_KMH / KMH_CONVERSION_FACTOR; 
+const MAX_REVERSE_KMH = 15;
+const MAX_REVERSE_UNITS = -(MAX_REVERSE_KMH / KMH_CONVERSION_FACTOR);
 
 const ACCELERATION = 0.003; 
 const BRAKING_FORCE = 0.03; 
@@ -673,7 +677,9 @@ function handleAccelerate() {
     return;
   }
 
-  if (speed < CRUISE_SPEED_UNITS) {
+  if (speed < 0) {
+    speed = Math.min(speed + BRAKING_FORCE, 0);
+  } else if (speed < CRUISE_SPEED_UNITS) {
     speed = CRUISE_SPEED_UNITS;
   } else {
     speed = Math.min(speed + ACCELERATION, MAX_SPEED_UNITS);
@@ -684,13 +690,25 @@ function updatePhysics() {
   if (passengerCount >= 1) {
     if (keysPressed.Up) {
       handleAccelerate();
+      reverseDelayCounter = 0;
     } else if (keysPressed.Down) {
-      speed = Math.max(speed - BRAKING_FORCE, 0); 
+      if (speed > 0) {
+        speed = Math.max(speed - BRAKING_FORCE, 0);
+        reverseDelayCounter = 0;
+      } else {
+        reverseDelayCounter++;
+        if (reverseDelayCounter > 30) {
+          speed = Math.max(speed - ACCELERATION, MAX_REVERSE_UNITS);
+        }
+      }
+    } else {
+      reverseDelayCounter = 0;
     }
 
     if (Math.abs(speed) > 0.05) {
-      if (keysPressed.Left) heading = (heading - ROTATION_SPEED + 360) % 360;
-      if (keysPressed.Right) heading = (heading + ROTATION_SPEED) % 360;
+      const turnDir = speed < 0 ? -1 : 1;
+      if (keysPressed.Left) heading = (heading - turnDir * ROTATION_SPEED + 360) % 360;
+      if (keysPressed.Right) heading = (heading + turnDir * ROTATION_SPEED) % 360;
     }
 
     const rad = (heading * Math.PI) / 180;
@@ -705,9 +723,10 @@ function updatePhysics() {
     document.getElementById('kmCoveredDisplay').textContent = `${distanceCoveredKm.toFixed(2)} km`;
   } else {
     speed = 0;
+    reverseDelayCounter = 0;
   }
 
-  const kmhDisplay = Math.round(speed * KMH_CONVERSION_FACTOR);
+  const kmhDisplay = Math.round(Math.abs(speed) * KMH_CONVERSION_FACTOR);
   document.getElementById('speedValue').textContent = kmhDisplay;
 
   const currentCoords = [busLng, busLat];
