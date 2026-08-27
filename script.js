@@ -261,31 +261,27 @@ const cssStyles = `
     letter-spacing: 0;
   }
 
-  .mobile-controls-left, .mobile-controls-right {
-    display: none !important;
+  .mobile-controls-left {
+    position: absolute !important;
+    bottom: 25px !important;
+    left: 15px !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    gap: 15px !important;
+    pointer-events: auto;
   }
 
-  @media (max-width: 1024px) {
-    .mobile-controls-left {
-      position: absolute !important;
-      bottom: 25px !important;
-      left: 15px !important;
-      z-index: 999999 !important;
-      display: flex !important;
-      gap: 15px !important;
-      pointer-events: auto;
-    }
-  
-    .mobile-controls-right {
-      position: absolute !important;
-      bottom: 25px !important;
-      right: 15px !important;
-      z-index: 999999 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 12px !important;
-      pointer-events: auto;
-    }
+  .mobile-controls-right {
+    position: absolute !important;
+    bottom: 25px !important;
+    right: 15px !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    pointer-events: auto;
+  }
+
   .btn-ctrl {
     width: 60px;
     height: 60px;
@@ -500,7 +496,6 @@ document.body.appendChild(speedBox);
 let map = null;
 let busMarker = null;
 
-// RESTAURADO O ZOOM E INCLINAÇÃO DA OPÇÃO PERTO COMO ESTAVA ANTES
 const CAMERA_SETTINGS = {
   NEAR: { zoom: 19.0, pitch: 0 }, 
   FAR: { zoom: 16.5, pitch: 0 }
@@ -746,6 +741,8 @@ function bindControl(btnId, keyName) {
     btn.classList.remove('active-ctrl');
   };
 
+  btn.addEventListener('touchstart', start, { passive: false });
+  btn.addEventListener('touchend', end, { passive: false });
   btn.addEventListener('pointerdown', start);
   btn.addEventListener('pointerup', end);
   btn.addEventListener('pointercancel', end);
