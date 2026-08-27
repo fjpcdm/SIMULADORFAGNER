@@ -99,18 +99,19 @@ const cssStyles = `
     top: 15px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 99998 !important;
+    z-index: 9999999 !important;
     background: rgba(245, 158, 11, 0.98) !important;
     color: #0f172a !important;
-    padding: 10px 20px !important;
+    padding: 10px 18px !important;
     border-radius: 20px !important;
     font-weight: bold !important;
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #ffffff !important;
     text-align: center !important;
     pointer-events: auto !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
+    max-width: 90vw !important;
   }
 
   .hud {
@@ -338,16 +339,29 @@ const cssStyles = `
     transform-origin: center center;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 1024px) {
+    .map-instruction-banner {
+      top: 10px !important;
+      font-size: 0.8rem !important;
+      padding: 8px 14px !important;
+      width: 90% !important;
+    }
+
+    .speedometer-container {
+      bottom: auto !important;
+      top: 65px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      font-size: 1.5rem !important;
+      padding: 6px 16px !important;
+      border-width: 2px !important;
+      border-radius: 20px !important;
+    }
+
     .hud {
       width: 220px;
     }
-    .speedometer-container {
-      font-size: 1.8rem !important;
-      padding: 10px 20px !important;
-      bottom: 120px !important;
-      left: 10px !important;
-    }
+
     .btn-ctrl {
       width: 55px;
       height: 55px;
