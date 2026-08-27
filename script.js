@@ -328,30 +328,23 @@ const cssStyles = `
   }
 
   .maplibregl-marker {
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    will-change: transform !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    z-index: 9999 !important;
+    z-index: 999999 !important;
   }
 
   .bus-marker-container {
-    width: 32px !important;
-    height: 70px !important;
-    display: block !important;
+    width: 40px !important;
+    height: 80px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     position: relative !important;
-    overflow: visible !important;
   }
 
   .bus-marker-svg {
-    width: 32px !important;
-    height: 68px !important;
-    filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.85));
+    width: 40px !important;
+    height: 80px !important;
+    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.9));
     display: block !important;
-    transform-origin: center center !important;
   }
 
   @media (max-width: 1024px) {
@@ -615,7 +608,7 @@ function initMap(startCoords) {
   busEl.className = 'bus-marker-container';
   busEl.innerHTML = `
     <svg class="bus-marker-svg" id="busSvg" viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="5" width="90" height="210" rx="18" fill="#d1d5db" stroke="#000000" stroke-width="3"/>
+      <rect x="5" y="5" width="90" height="210" rx="18" fill="#d1d5db" stroke="#000000" stroke-width="4"/>
       <path d="M 5,23 C 5,12 12,5 23,5 L 77,5 C 88,5 95,12 95,23 L 95,155 L 5,155 Z" fill="${preset.bodyColor}" />
       <path d="M 5,155 L 95,155 L 95,197 C 95,208 88,215 77,215 L 23,215 C 12,215 5,208 5,208 Z" fill="${preset.stripeColor}" />
       <path d="M 1,32 L 6,32 L 6,48 L 1,48 Z" fill="#0f172a"/>
@@ -627,7 +620,10 @@ function initMap(startCoords) {
     </svg>
   `;
 
-  busMarker = new maplibregl.Marker({ element: busEl, anchor: 'center' })
+  busMarker = new maplibregl.Marker({ 
+    element: busEl, 
+    anchor: 'center' 
+  })
     .setLngLat(startCoords)
     .addTo(map);
 
@@ -742,9 +738,6 @@ function updatePhysics() {
 
   const currentCoords = [busLng, busLat];
   if (busMarker) busMarker.setLngLat(currentCoords);
-
-  const busSvg = document.getElementById('busSvg');
-  if (busSvg) busSvg.style.transform = `rotate(0deg)`;
 
   if (map) {
     map.jumpTo({
