@@ -2,61 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Bus Online - Perspectiva 3D</title>
-  
-  <!-- MapLibre GL JS (Substitui o Leaflet para Rotação 3D sem bugs) -->
-  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Simulador de Ônibus</title>
   <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <!-- Container do Mapa WebGL -->
   <div id="map"></div>
-
-  <!-- Painel HUD / Controle da Linha -->
-  <div class="hud">
-    <h2>🚌 Bus Online SIM</h2>
-
-    <label for="locationSearch">Buscar Local/Rua:</label>
-    <div style="display: flex; gap: 4px;">
-      <input type="text" id="locationSearch" placeholder="Ex: Praça Sete, BH">
-      <button id="btnSearch" class="btn-action" style="background: #3b82f6; width: 60px;">Ir</button>
-    </div>
-
-    <label for="busSelect">Linha em Operação:</label>
-    <select id="busSelect">
-      <option value="">-- Selecione a Linha --</option>
-    </select>
-
-    <div class="passenger-box">
-      <span>Passageiros:</span>
-      <div>
-        <strong id="passengerCount">0</strong> / <span id="maxCapacity">80</span>
-      </div>
-    </div>
-
-    <div class="passenger-actions">
-      <button id="btnBoard" class="btn-action btn-in">Embarcar</button>
-      <button id="btnUnboard" class="btn-action btn-out">Desembarcar</button>
-    </div>
-  </div>
-
-  <!-- Velocímetro -->
-  <div class="speedometer">
-    <span id="speedDisplay">0</span> <small style="font-size: 0.8rem; color: #94a3b8;">km/h</small>
-  </div>
-
-  <!-- Controles para Dispositivos Móveis -->
-  <div class="mobile-controls">
-    <div></div>
-    <button id="btnUp" class="btn-ctrl">▲</button>
-    <div></div>
-    <button id="btnLeft" class="btn-ctrl">◄</button>
-    <button id="btnDown" class="btn-ctrl">▼</button>
-    <button id="btnRight" class="btn-ctrl">►</button>
-  </div>
-
   <script src="script.js"></script>
 </body>
 </html>
