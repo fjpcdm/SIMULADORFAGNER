@@ -275,7 +275,7 @@ const cssStyles = `
       gap: 15px !important;
       pointer-events: auto;
     }
-
+  
     .mobile-controls-right {
       position: absolute !important;
       bottom: 25px !important;
@@ -286,8 +286,6 @@ const cssStyles = `
       gap: 12px !important;
       pointer-events: auto;
     }
-  }
-
   .btn-ctrl {
     width: 60px;
     height: 60px;
