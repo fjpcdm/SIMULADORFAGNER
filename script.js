@@ -327,19 +327,25 @@ const cssStyles = `
     display: none;
   }
 
+  .maplibregl-marker {
+    display: block !important;
+    will-change: transform;
+  }
+
   .bus-marker-container {
-    width: 32px;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 32px !important;
+    height: 70px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
   }
 
   .bus-marker-svg {
-    width: 32px;
-    height: 68px;
+    width: 32px !important;
+    height: 68px !important;
     filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.85));
-    display: block;
+    display: block !important;
     transform-origin: center center;
   }
 
