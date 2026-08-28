@@ -115,17 +115,20 @@ const cssStyles = `
     max-width: 90vw !important;
   }
 
+  /* HUD Transparente */
   .hud {
     position: absolute !important;
     top: 15px !important;
     left: 15px !important;
     z-index: 999999 !important;
-    background: rgba(15, 23, 42, 0.95) !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: #ffffff !important;
     padding: 12px !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
     width: 240px;
     max-width: calc(100vw - 30px);
     pointer-events: auto !important;
@@ -136,10 +139,11 @@ const cssStyles = `
     margin-bottom: 6px;
     text-align: center;
     color: #f59e0b;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
 
   .line-badge {
-    background: #1e293b;
+    background: rgba(30, 41, 59, 0.7);
     border: 1px solid #38bdf8;
     color: #38bdf8;
     padding: 6px 10px;
@@ -152,8 +156,8 @@ const cssStyles = `
 
   .trip-info-box {
     padding: 8px 10px;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.8);
     border-radius: 8px;
     font-size: 0.8rem;
     margin-bottom: 10px;
@@ -174,7 +178,7 @@ const cssStyles = `
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #1e293b;
+    background: rgba(30, 41, 59, 0.7);
     padding: 8px 10px;
     border-radius: 8px;
     margin-bottom: 10px;
@@ -204,12 +208,12 @@ const cssStyles = `
   }
 
   .trip-status-badge.running {
-    background: #10b981;
+    background: rgba(16, 185, 129, 0.85);
     color: #ffffff;
   }
 
   .trip-status-badge.stopped {
-    background: #ef4444;
+    background: rgba(239, 68, 68, 0.85);
     color: #ffffff;
   }
 
@@ -225,7 +229,7 @@ const cssStyles = `
     font-size: 0.75rem;
     font-weight: bold;
     color: #ffffff;
-    background: #3b82f6;
+    background: rgba(59, 130, 246, 0.8);
     border: 1px solid #60a5fa;
     border-radius: 6px;
     cursor: pointer;
@@ -242,7 +246,7 @@ const cssStyles = `
     width: 100%;
     padding: 8px;
     margin-top: 10px;
-    background: #dc2626;
+    background: rgba(220, 38, 38, 0.85);
     border: 1px solid #f87171;
     border-radius: 6px;
     color: #ffffff;
@@ -252,19 +256,22 @@ const cssStyles = `
     text-align: center;
   }
 
+  /* Velocímetro */
   .speedometer-container {
     position: absolute !important;
     bottom: 20px !important;
     left: 20px !important;
     z-index: 999999 !important;
-    background: rgba(10, 15, 25, 0.98) !important;
+    background: rgba(10, 15, 25, 0.75) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     color: #38bdf8 !important;
     padding: 10px 24px !important;
     border-radius: 25px !important;
     font-size: 1.8rem !important;
     font-weight: 800 !important;
     border: 3px solid #38bdf8 !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: baseline;
     gap: 6px;
@@ -277,6 +284,65 @@ const cssStyles = `
     font-weight: 600;
     color: #94a3b8;
     letter-spacing: 0;
+  }
+
+  /* Controles On-Screen (Mobile) */
+  .mobile-controls-container {
+    position: absolute !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 999999 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto !important;
+  }
+
+  .mobile-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-drive-touch {
+    width: 58px;
+    height: 58px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 2px solid #38bdf8;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+
+  .btn-drive-touch:active {
+    background: rgba(56, 189, 248, 0.5);
+    transform: scale(0.95);
+  }
+
+  .btn-drive-touch.btn-accel {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.35);
+  }
+
+  .btn-drive-touch.btn-accel:active {
+    background: rgba(16, 185, 129, 0.7);
+  }
+
+  .btn-drive-touch.btn-brake {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.35);
+  }
+
+  .btn-drive-touch.btn-brake:active {
+    background: rgba(239, 68, 68, 0.7);
   }
 
   .alert-toast {
@@ -433,6 +499,20 @@ speedBox.style.display = 'none';
 speedBox.innerHTML = '<span id="speedValue">0</span><span class="speed-unit">km/h</span>';
 document.body.appendChild(speedBox);
 
+/* Painel de Controles Toque/Mobile */
+let touchControlsContainer = document.createElement('div');
+touchControlsContainer.className = 'mobile-controls-container';
+touchControlsContainer.style.display = 'none';
+touchControlsContainer.innerHTML = `
+  <button class="btn-drive-touch btn-accel" id="btnTouchUp">⬆️</button>
+  <div class="mobile-row">
+    <button class="btn-drive-touch" id="btnTouchLeft">⬅️</button>
+    <button class="btn-drive-touch" id="btnTouchRight">➡️</button>
+  </div>
+  <button class="btn-drive-touch btn-brake" id="btnTouchDown">⬇️</button>
+`;
+document.body.appendChild(touchControlsContainer);
+
 let map = null;
 let busMarker = null;
 let animationFrameId = null;
@@ -471,6 +551,36 @@ const ROTATION_SPEED = 0.8;
 
 const keysPressed = { Up: false, Down: false, Left: false, Right: false };
 
+function bindTouchEvents(elementId, keyName) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const startPress = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (keyName === 'Up' && !keysPressed.Up) {
+      handleAccelerate();
+    }
+    keysPressed[keyName] = true;
+  };
+
+  const endPress = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    keysPressed[keyName] = false;
+  };
+
+  el.addEventListener('pointerdown', startPress);
+  el.addEventListener('pointerup', endPress);
+  el.addEventListener('pointercancel', endPress);
+  el.addEventListener('pointerleave', endPress);
+}
+
+bindTouchEvents('btnTouchUp', 'Up');
+bindTouchEvents('btnTouchDown', 'Down');
+bindTouchEvents('btnTouchLeft', 'Left');
+bindTouchEvents('btnTouchRight', 'Right');
+
 document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   selectedLineKey = document.getElementById('selectLine').value;
   activePresetKey = document.getElementById('selectColor').value || 'vermelho';
@@ -482,6 +592,7 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   setupModal.style.display = 'none';
   hudContainer.style.display = 'block';
   speedBox.style.display = 'flex';
+  touchControlsContainer.style.display = 'flex';
   mapBanner.style.display = 'block';
 
   document.getElementById('lineBadgeDisplay').textContent = lineData.name;
@@ -521,6 +632,7 @@ function exitGame() {
 
   hudContainer.style.display = 'none';
   speedBox.style.display = 'none';
+  touchControlsContainer.style.display = 'none';
   mapBanner.style.display = 'none';
   setupModal.style.display = 'flex';
 }
