@@ -413,7 +413,7 @@ const LINES_DATA = {
   '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
   '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
   '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
+  '3785': { name: '3785 - Terminal Sarzedo X Brumadinho', type: 'rodoviario', startCoords: COORDS.SARZEDO },
   '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
 };
 
