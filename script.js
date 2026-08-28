@@ -341,7 +341,7 @@ const LINES_DATA = {
   '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
   '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
   '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Terminal Sarzedo x Brumadinho', type: 'rodoviario', startCoords: COORDS.SARZEDO },
+  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
   '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
 };
 
@@ -352,7 +352,7 @@ const COLOR_PRESETS = {
   'amarelo': { name: 'Amarelo', bodyColor: '#eab308', stripeColor: '#ffffff' },
   'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#ffffff' },
   'branco': { name: 'Branco', bodyColor: '#f8fafc', stripeColor: '#94a3b8' },
-  'roxo_branco': { name: 'Roxo e Branco', bodyColor: ' #3A2A78', stripeColor: '#E65C00',stripeColor: '#ffffff',stripeColor: '#212121' },
+  'roxo_branco': { name: 'Roxo e Branco', bodyColor: '#7c3aed', stripeColor: '#ffffff' },
   'verde_preto': { name: 'Verde e Preto', bodyColor: '#15803d', stripeColor: '#0f172a' },
   'cinza_azul': { name: 'Cinza com Azul', bodyColor: '#64748b', stripeColor: '#0284c7' }
 };
