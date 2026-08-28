@@ -256,19 +256,20 @@ const cssStyles = `
     text-align: center;
   }
 
-  /* Velocímetro */
+  /* Velocímetro centralizado no meio inferior */
   .speedometer-container {
     position: absolute !important;
     bottom: 20px !important;
-    left: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     z-index: 999999 !important;
     background: rgba(10, 15, 25, 0.75) !important;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     color: #38bdf8 !important;
-    padding: 10px 24px !important;
+    padding: 10px 20px !important;
     border-radius: 25px !important;
-    font-size: 1.8rem !important;
+    font-size: 1.6rem !important;
     font-weight: 800 !important;
     border: 3px solid #38bdf8 !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
@@ -286,22 +287,27 @@ const cssStyles = `
     letter-spacing: 0;
   }
 
-  /* Controles On-Screen (Mobile) */
-  .mobile-controls-container {
+  /* Controles On-Screen (Esquerda: Direção) */
+  .mobile-controls-left {
     position: absolute !important;
     bottom: 20px !important;
-    right: 20px !important;
+    left: 15px !important;
     z-index: 999999 !important;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     gap: 10px;
     pointer-events: auto !important;
   }
 
-  .mobile-row {
+  /* Controles On-Screen (Direita: Aceleração/Freio) */
+  .mobile-controls-right {
+    position: absolute !important;
+    bottom: 20px !important;
+    right: 15px !important;
+    z-index: 999999 !important;
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    pointer-events: auto !important;
   }
 
   .btn-drive-touch {
@@ -407,7 +413,7 @@ const LINES_DATA = {
   '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
   '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
   '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.SARZEDO},
+  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
   '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
 };
 
@@ -499,19 +505,24 @@ speedBox.style.display = 'none';
 speedBox.innerHTML = '<span id="speedValue">0</span><span class="speed-unit">km/h</span>';
 document.body.appendChild(speedBox);
 
-/* Painel de Controles Toque/Mobile */
-let touchControlsContainer = document.createElement('div');
-touchControlsContainer.className = 'mobile-controls-container';
-touchControlsContainer.style.display = 'none';
-touchControlsContainer.innerHTML = `
+/* Painéis de Controles Toque/Mobile Separados */
+let leftControlsContainer = document.createElement('div');
+leftControlsContainer.className = 'mobile-controls-left';
+leftControlsContainer.style.display = 'none';
+leftControlsContainer.innerHTML = `
+  <button class="btn-drive-touch" id="btnTouchLeft">⬅️</button>
+  <button class="btn-drive-touch" id="btnTouchRight">➡️</button>
+`;
+document.body.appendChild(leftControlsContainer);
+
+let rightControlsContainer = document.createElement('div');
+rightControlsContainer.className = 'mobile-controls-right';
+rightControlsContainer.style.display = 'none';
+rightControlsContainer.innerHTML = `
   <button class="btn-drive-touch btn-accel" id="btnTouchUp">⬆️</button>
-  <div class="mobile-row">
-    <button class="btn-drive-touch" id="btnTouchLeft">⬅️</button>
-    <button class="btn-drive-touch" id="btnTouchRight">➡️</button>
-  </div>
   <button class="btn-drive-touch btn-brake" id="btnTouchDown">⬇️</button>
 `;
-document.body.appendChild(touchControlsContainer);
+document.body.appendChild(rightControlsContainer);
 
 let map = null;
 let busMarker = null;
@@ -592,7 +603,8 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   setupModal.style.display = 'none';
   hudContainer.style.display = 'block';
   speedBox.style.display = 'flex';
-  touchControlsContainer.style.display = 'flex';
+  leftControlsContainer.style.display = 'flex';
+  rightControlsContainer.style.display = 'flex';
   mapBanner.style.display = 'block';
 
   document.getElementById('lineBadgeDisplay').textContent = lineData.name;
@@ -632,7 +644,8 @@ function exitGame() {
 
   hudContainer.style.display = 'none';
   speedBox.style.display = 'none';
-  touchControlsContainer.style.display = 'none';
+  leftControlsContainer.style.display = 'none';
+  rightControlsContainer.style.display = 'none';
   mapBanner.style.display = 'none';
   setupModal.style.display = 'flex';
 }
