@@ -238,6 +238,20 @@ const cssStyles = `
     color: #0f172a;
   }
 
+  .btn-exit-game {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #dc2626;
+    border: 1px solid #f87171;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+  }
+
   .speedometer-container {
     position: absolute !important;
     bottom: 20px !important;
@@ -265,51 +279,6 @@ const cssStyles = `
     letter-spacing: 0;
   }
 
-  .mobile-controls-left {
-    position: absolute !important;
-    bottom: 20px !important;
-    left: 15px !important;
-    z-index: 9999999 !important;
-    display: flex !important;
-    gap: 12px !important;
-    pointer-events: auto !important;
-  }
-
-  .mobile-controls-right {
-    position: absolute !important;
-    bottom: 20px !important;
-    right: 15px !important;
-    z-index: 9999999 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-    pointer-events: auto !important;
-  }
-
-  .btn-ctrl {
-    width: 52px;
-    height: 52px;
-    background: rgba(255, 255, 255, 0.95) !important;
-    border: 3px solid #38bdf8 !important;
-    border-radius: 50% !important;
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #0f172a;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.7);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: none;
-    pointer-events: auto !important;
-  }
-
-  .btn-ctrl.active-ctrl {
-    background: #38bdf8 !important;
-    color: #ffffff !important;
-  }
-
   .alert-toast {
     position: fixed;
     top: 70px;
@@ -333,10 +302,10 @@ const cssStyles = `
   }
 
   .bus-marker-img {
-    width: 55px !important;
-    height: 110px !important;
+    width: 33px !important;
+    height: 66px !important;
     display: block !important;
-    filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.95));
+    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.95));
   }
 `;
 
@@ -372,7 +341,7 @@ const LINES_DATA = {
   '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
   '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
   '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
+  '3785': { name: '3785 - Terminal Sarzedo x Brumadinho', type: 'rodoviario', startCoords: COORDS.SARZEDO },
   '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
 };
 
@@ -383,7 +352,7 @@ const COLOR_PRESETS = {
   'amarelo': { name: 'Amarelo', bodyColor: '#eab308', stripeColor: '#ffffff' },
   'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#ffffff' },
   'branco': { name: 'Branco', bodyColor: '#f8fafc', stripeColor: '#94a3b8' },
-  'roxo_branco': { name: 'Roxo e Branco', bodyColor: '#7c3aed', stripeColor: '#ffffff' },
+  'roxo_branco': { name: 'Roxo e Branco', bodyColor: ' #3A2A78', stripeColor: '#E65C00',stripeColor: '#ffffff',stripeColor: '#212121' },
   'verde_preto': { name: 'Verde e Preto', bodyColor: '#15803d', stripeColor: '#0f172a' },
   'cinza_azul': { name: 'Cinza com Azul', bodyColor: '#64748b', stripeColor: '#0284c7' }
 };
@@ -454,22 +423,8 @@ hudContainer.innerHTML = `
     <button id="btnZoomNear" class="btn-zoom active">🔍 Perto</button>
     <button id="btnZoomFar" class="btn-zoom">🌐 Longe</button>
   </div>
-`;
 
-let controlsLeft = document.createElement('div');
-controlsLeft.className = 'mobile-controls-left';
-document.body.appendChild(controlsLeft);
-controlsLeft.innerHTML = `
-  <button id="btnLeft" class="btn-ctrl">◀</button>
-  <button id="btnRight" class="btn-ctrl">▶</button>
-`;
-
-let controlsRight = document.createElement('div');
-controlsRight.className = 'mobile-controls-right';
-document.body.appendChild(controlsRight);
-controlsRight.innerHTML = `
-  <button id="btnUp" class="btn-ctrl">▲</button>
-  <button id="btnDown" class="btn-ctrl">▼</button>
+  <button class="btn-exit-game" id="btnExitGame">🚪 Sair do Jogo</button>
 `;
 
 let speedBox = document.createElement('div');
@@ -480,10 +435,11 @@ document.body.appendChild(speedBox);
 
 let map = null;
 let busMarker = null;
+let animationFrameId = null;
 
 const CAMERA_SETTINGS = {
-  NEAR: { zoom: 18.5, pitch: 0 }, 
-  FAR: { zoom: 16.5, pitch: 0 }
+  NEAR: { zoom: 19.8, pitch: 0 }, 
+  FAR: { zoom: 17.8, pitch: 0 }
 };
 
 let currentZoom = CAMERA_SETTINGS.NEAR.zoom;
@@ -537,6 +493,40 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   initMap(startCoords);
 });
 
+function exitGame() {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  if (map) {
+    map.remove();
+    map = null;
+  }
+
+  busMarker = null;
+  speed = 0;
+  heading = 0;
+  distanceCoveredKm = 0;
+  passengerCount = 0;
+
+  keysPressed.Up = false;
+  keysPressed.Down = false;
+  keysPressed.Left = false;
+  keysPressed.Right = false;
+
+  document.getElementById('kmCoveredDisplay').textContent = '0.00 km';
+  document.getElementById('paxCountDisplay').textContent = '0';
+  document.getElementById('speedValue').textContent = '0';
+
+  hudContainer.style.display = 'none';
+  speedBox.style.display = 'none';
+  mapBanner.style.display = 'none';
+  setupModal.style.display = 'flex';
+}
+
+document.getElementById('btnExitGame').addEventListener('click', exitGame);
+
 function getBusSvgDataUrl(bodyColor, stripeColor) {
   const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 240" width="120" height="240">
     <rect x="5" y="5" width="110" height="230" rx="22" fill="#000000" stroke="#f59e0b" stroke-width="6"/>
@@ -559,34 +549,23 @@ function initMap(startCoords) {
     style: {
       version: 8,
       sources: {
-        'sat-layer-source': {
+        'google-hybrid-source': {
           type: 'raster',
           tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            'https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            'https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            'https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
           ],
           tileSize: 256,
-          maxzoom: 19
-        },
-        'osm-fallback-source': {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          maxzoom: 19
+          maxzoom: 22
         }
       },
       layers: [
         {
-          id: 'osm-fallback-layer',
+          id: 'google-hybrid-layer',
           type: 'raster',
-          source: 'osm-fallback-source',
-          minzoom: 0,
-          maxzoom: 22
-        },
-        {
-          id: 'sat-layer',
-          type: 'raster',
-          source: 'sat-layer-source',
+          source: 'google-hybrid-source',
           minzoom: 0,
           maxzoom: 22
         }
@@ -595,7 +574,7 @@ function initMap(startCoords) {
     center: startCoords,
     zoom: currentZoom,
     pitch: currentPitch,
-    maxZoom: 20,
+    maxZoom: 22,
     bearing: 0
   });
 
@@ -612,7 +591,7 @@ function initMap(startCoords) {
     .addTo(map);
 
   map.on('load', () => {
-    requestAnimationFrame(updatePhysics);
+    animationFrameId = requestAnimationFrame(updatePhysics);
   });
 }
 
@@ -678,6 +657,8 @@ function handleAccelerate() {
 }
 
 function updatePhysics() {
+  if (!map) return;
+
   if (passengerCount >= 1) {
     if (keysPressed.Up) {
       handleAccelerate();
@@ -732,7 +713,7 @@ function updatePhysics() {
     });
   }
 
-  requestAnimationFrame(updatePhysics);
+  animationFrameId = requestAnimationFrame(updatePhysics);
 }
 
 document.getElementById('btnZoomNear').addEventListener('pointerdown', (e) => {
@@ -750,41 +731,6 @@ document.getElementById('btnZoomFar').addEventListener('pointerdown', (e) => {
   document.getElementById('btnZoomFar').classList.add('active');
   document.getElementById('btnZoomNear').classList.remove('active');
 });
-
-function bindControl(btnId, keyName) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-
-  const start = (e) => {
-    e.stopPropagation();
-    if (e.cancelable) e.preventDefault();
-    keysPressed[keyName] = true;
-    btn.classList.add('active-ctrl');
-    if (keyName === 'Up') {
-      handleAccelerate();
-    }
-  };
-
-  const end = (e) => {
-    e.stopPropagation();
-    if (e.cancelable) e.preventDefault();
-    keysPressed[keyName] = false;
-    btn.classList.remove('active-ctrl');
-  };
-
-  btn.addEventListener('touchstart', start, { passive: false });
-  btn.addEventListener('touchend', end, { passive: false });
-  btn.addEventListener('touchcancel', end, { passive: false });
-  btn.addEventListener('pointerdown', start);
-  btn.addEventListener('pointerup', end);
-  btn.addEventListener('pointercancel', end);
-  btn.addEventListener('pointerleave', end);
-}
-
-bindControl('btnUp', 'Up');
-bindControl('btnDown', 'Down');
-bindControl('btnLeft', 'Left');
-bindControl('btnRight', 'Right');
 
 window.addEventListener('keydown', (e) => {
   if (['ArrowUp', 'KeyW'].includes(e.code)) {
