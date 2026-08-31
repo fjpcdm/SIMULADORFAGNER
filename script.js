@@ -50,6 +50,32 @@ const cssStyles = `
     text-align: center;
   }
 
+  .mode-selection-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .btn-mode-select {
+    width: 100%;
+    padding: 16px;
+    background: #334155;
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+  }
+
+  .btn-mode-select:active {
+    background: #38bdf8;
+    color: #0f172a;
+  }
+
   .form-group {
     margin-bottom: 14px;
   }
@@ -83,6 +109,19 @@ const cssStyles = `
     cursor: pointer;
     margin-top: 10px;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+
+  .btn-back-menu {
+    width: 100%;
+    padding: 10px;
+    background: #64748b;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 8px;
   }
 
   #map {
@@ -256,7 +295,7 @@ const cssStyles = `
     text-align: center;
   }
 
-  /* Velocímetro centralizado no meio inferior */
+  /* Velocímetro */
   .speedometer-container {
     position: absolute !important;
     bottom: 20px !important;
@@ -287,7 +326,7 @@ const cssStyles = `
     letter-spacing: 0;
   }
 
-  /* Controles On-Screen (Esquerda: Direção) */
+  /* Controles On-Screen Esquerda */
   .mobile-controls-left {
     position: absolute !important;
     bottom: 20px !important;
@@ -298,7 +337,7 @@ const cssStyles = `
     pointer-events: auto !important;
   }
 
-  /* Controles On-Screen (Direita: Aceleração/Freio) */
+  /* Controles On-Screen Direita */
   .mobile-controls-right {
     position: absolute !important;
     bottom: 20px !important;
@@ -374,8 +413,8 @@ const cssStyles = `
   }
 
   .bus-marker-img {
-    width: 33px !important;
-    height: 66px !important;
+    width: 36px !important;
+    height: 78px !important;
     display: block !important;
     filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.95));
   }
@@ -413,7 +452,7 @@ const LINES_DATA = {
   '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
   '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
   '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Terminal Sarzedo X Brumadinho', type: 'rodoviario', startCoords: COORDS.SARZEDO },
+  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
   '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
 };
 
@@ -443,17 +482,48 @@ for (const key in COLOR_PRESETS) {
 }
 
 setupModal.innerHTML = `
-  <div class="setup-card">
-    <h2>🚍 Configurador de Viagem</h2>
+  <div class="setup-card" id="cardMainMenu">
+    <h2>🚍 Simulator - Menu Principal</h2>
+    <div class="mode-selection-box">
+      <button class="btn-mode-select" id="btnSelectLineMode">📍 Modo Linha</button>
+      <button class="btn-mode-select" id="btnSelectFreeMode">🗺️ Modo Livre</button>
+    </div>
+  </div>
+
+  <div class="setup-card" id="cardLineMode" style="display: none;">
+    <h2>🚍 Modo Linha</h2>
     <div class="form-group">
       <label>Linha de Operação:</label>
       <select id="selectLine">${lineOptionsHtml}</select>
     </div>
     <div class="form-group">
-      <label>Cor do Ônibus:</label>
-      <select id="selectColor">${colorOptionsHtml}</select>
+      <label>Número do Carro / Prefixo:</label>
+      <input type="text" id="inputBusNumber" placeholder="Ex: 20450" value="29435" />
     </div>
-    <button class="btn-start-sim" id="btnConfirmSetup">Iniciar Viagem</button>
+    <div class="form-group">
+      <label>Cor do Ônibus:</label>
+      <select id="selectColorLine">${colorOptionsHtml}</select>
+    </div>
+    <button class="btn-start-sim" id="btnStartLineMode">Iniciar Viagem</button>
+    <button class="btn-back-menu" id="btnBackLine">Voltar</button>
+  </div>
+
+  <div class="setup-card" id="cardFreeMode" style="display: none;">
+    <h2>🗺️ Modo Livre</h2>
+    <div class="form-group">
+      <label>Nome da Empresa:</label>
+      <input type="text" id="inputCompanyName" placeholder="Ex: Viação Gontijo" value="MARCOPOLO" />
+    </div>
+    <div class="form-group">
+      <label>Cor do Ônibus:</label>
+      <select id="selectColorFree">${colorOptionsHtml}</select>
+    </div>
+    <div class="form-group">
+      <label>Pesquisar Local / Cidade / Rua:</label>
+      <input type="text" id="inputFreeLocation" placeholder="Ex: Praça Sete, Belo Horizonte" value="Ibirité, MG" />
+    </div>
+    <button class="btn-start-sim" id="btnStartFreeMode">Carregar Mapa e Dirigir</button>
+    <button class="btn-back-menu" id="btnBackFree">Voltar</button>
   </div>
 `;
 document.body.appendChild(setupModal);
@@ -505,7 +575,6 @@ speedBox.style.display = 'none';
 speedBox.innerHTML = '<span id="speedValue">0</span><span class="speed-unit">km/h</span>';
 document.body.appendChild(speedBox);
 
-/* Painéis de Controles Toque/Mobile Separados */
 let leftControlsContainer = document.createElement('div');
 leftControlsContainer.className = 'mobile-controls-left';
 leftControlsContainer.style.display = 'none';
@@ -536,6 +605,8 @@ const CAMERA_SETTINGS = {
 let currentZoom = CAMERA_SETTINGS.NEAR.zoom;
 let currentPitch = CAMERA_SETTINGS.NEAR.pitch;
 
+let currentGameMode = 'line'; 
+let busLabelText = '';
 let selectedLineKey = '301C';
 let passengerCount = 0;
 let maxPassengers = 80;
@@ -592,14 +663,82 @@ bindTouchEvents('btnTouchDown', 'Down');
 bindTouchEvents('btnTouchLeft', 'Left');
 bindTouchEvents('btnTouchRight', 'Right');
 
-document.getElementById('btnConfirmSetup').addEventListener('click', () => {
-  selectedLineKey = document.getElementById('selectLine').value;
-  activePresetKey = document.getElementById('selectColor').value || 'vermelho';
-  const lineData = LINES_DATA[selectedLineKey] || LINES_DATA['301C'];
+/* Navegação da Tela Inicial */
+document.getElementById('btnSelectLineMode').addEventListener('click', () => {
+  document.getElementById('cardMainMenu').style.display = 'none';
+  document.getElementById('cardLineMode').style.display = 'block';
+});
 
+document.getElementById('btnSelectFreeMode').addEventListener('click', () => {
+  document.getElementById('cardMainMenu').style.display = 'none';
+  document.getElementById('cardFreeMode').style.display = 'block';
+});
+
+document.getElementById('btnBackLine').addEventListener('click', () => {
+  document.getElementById('cardLineMode').style.display = 'none';
+  document.getElementById('cardMainMenu').style.display = 'block';
+});
+
+document.getElementById('btnBackFree').addEventListener('click', () => {
+  document.getElementById('cardFreeMode').style.display = 'none';
+  document.getElementById('cardMainMenu').style.display = 'block';
+});
+
+/* Confirmação do Modo Linha */
+document.getElementById('btnStartLineMode').addEventListener('click', () => {
+  currentGameMode = 'line';
+  selectedLineKey = document.getElementById('selectLine').value;
+  activePresetKey = document.getElementById('selectColorLine').value || 'vermelho';
+  const busNumber = document.getElementById('inputBusNumber').value.trim() || '29435';
+  
+  busLabelText = busNumber;
+
+  const lineData = LINES_DATA[selectedLineKey] || LINES_DATA['301C'];
   maxPassengers = lineData.type === 'rodoviario' ? 46 : 80;
   document.getElementById('maxPaxDisplay').textContent = maxPassengers;
 
+  document.getElementById('lineBadgeDisplay').textContent = `${lineData.name} - Carro ${busNumber}`;
+  
+  const startCoords = lineData.startCoords;
+  startSimulation(startCoords);
+});
+
+/* Confirmação do Modo Livre */
+document.getElementById('btnStartFreeMode').addEventListener('click', async () => {
+  currentGameMode = 'free';
+  const companyName = document.getElementById('inputCompanyName').value.trim() || 'MARCOPOLO';
+  activePresetKey = document.getElementById('selectColorFree').value || 'vermelho';
+  const locationQuery = document.getElementById('inputFreeLocation').value.trim();
+
+  busLabelText = companyName;
+
+  if (!locationQuery) {
+    showAlert("Por favor, digite um local para pesquisar.");
+    return;
+  }
+
+  maxPassengers = 80;
+  document.getElementById('maxPaxDisplay').textContent = maxPassengers;
+  document.getElementById('lineBadgeDisplay').textContent = `Modo Livre: ${companyName}`;
+
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationQuery)}`);
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      const startCoords = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+      startSimulation(startCoords);
+    } else {
+      showAlert("Local não encontrado. Usando coordenadas padrão.");
+      startSimulation(COORDS.IBIRITE);
+    }
+  } catch (err) {
+    showAlert("Erro na busca de local. Usando coordenadas padrão.");
+    startSimulation(COORDS.IBIRITE);
+  }
+});
+
+function startSimulation(startCoords) {
   setupModal.style.display = 'none';
   hudContainer.style.display = 'block';
   speedBox.style.display = 'flex';
@@ -607,14 +746,11 @@ document.getElementById('btnConfirmSetup').addEventListener('click', () => {
   rightControlsContainer.style.display = 'flex';
   mapBanner.style.display = 'block';
 
-  document.getElementById('lineBadgeDisplay').textContent = lineData.name;
-
-  const startCoords = lineData.startCoords;
   busLng = startCoords[0];
   busLat = startCoords[1];
 
   initMap(startCoords);
-});
+}
 
 function exitGame() {
   if (animationFrameId) {
@@ -647,24 +783,61 @@ function exitGame() {
   leftControlsContainer.style.display = 'none';
   rightControlsContainer.style.display = 'none';
   mapBanner.style.display = 'none';
+
+  document.getElementById('cardLineMode').style.display = 'none';
+  document.getElementById('cardFreeMode').style.display = 'none';
+  document.getElementById('cardMainMenu').style.display = 'block';
   setupModal.style.display = 'flex';
 }
 
 document.getElementById('btnExitGame').addEventListener('click', exitGame);
 
-function getBusSvgDataUrl(bodyColor, stripeColor) {
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 240" width="120" height="240">
-    <rect x="5" y="5" width="110" height="230" rx="22" fill="#000000" stroke="#f59e0b" stroke-width="6"/>
-    <path d="M 10,25 C 10,14 18,8 30,8 L 90,8 C 102,8 110,14 110,25 L 110,160 L 10,160 Z" fill="${bodyColor}" />
-    <path d="M 10,160 L 110,160 L 110,210 C 110,222 102,230 90,230 L 30,230 C 18,230 10,222 10,210 Z" fill="${stripeColor}" />
-    <rect x="0" y="35" width="8" height="25" rx="3" fill="#000000"/>
-    <rect x="112" y="35" width="8" height="25" rx="3" fill="#000000"/>
-    <path d="M 15,20 Q 60,12 105,20 L 105,60 Q 60,54 15,60 Z" fill="#0f172a"/>
-    <path d="M 18,24 Q 60,17 102,24 L 102,54 Q 60,48 18,54 Z" fill="#38bdf8"/>
-    <rect x="30" y="14" width="60" height="8" rx="3" fill="#f59e0b"/>
-    <rect x="25" y="95" width="70" height="45" rx="8" fill="#334155" stroke="#ffffff" stroke-width="2"/>
-  </svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svgString);
+/* Gerador de SVG do Ônibus por Modelo e Modo */
+function getBusSvgDataUrl(bodyColor, stripeColor, isDoubleDecker, textOverlay) {
+  let busSvg = '';
+
+  if (isDoubleDecker) {
+    /* Modelo Rodoviário Double Decker (Modo Livre - Imagem 3) */
+    busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
+      <rect x="6" y="6" width="108" height="248" rx="20" fill="#0b0f19" stroke="#1e293b" stroke-width="4"/>
+      
+      <path d="M 10,30 C 10,12 20,8 60,8 C 100,8 110,12 110,30 L 110,235 C 110,248 98,252 60,252 C 22,252 10,248 10,235 Z" fill="${bodyColor}" />
+      
+      <path d="M 12,90 L 108,90 L 108,180 L 12,210 Z" fill="${stripeColor}" opacity="0.25"/>
+      <path d="M 10,160 Q 60,185 110,160 L 110,235 C 110,248 98,252 60,252 C 22,252 10,248 10,235 Z" fill="${stripeColor}" opacity="0.8"/>
+
+      <path d="M 15,22 C 25,14 60,12 95,14 C 105,22 105,38 105,38 L 15,38 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+      <path d="M 15,44 L 105,44 L 105,68 L 15,68 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+      
+      <path d="M 2,28 C -2,28 -2,42 8,46 L 14,42 Z" fill="#0f172a"/>
+      <path d="M 118,28 C 122,28 122,42 112,46 L 106,42 Z" fill="#0f172a"/>
+
+      <rect x="28" y="80" width="64" height="110" rx="8" fill="#1e293b" opacity="0.6" stroke="#ffffff" stroke-width="1"/>
+
+      <text x="-135" y="65" transform="rotate(-90)" fill="#ffffff" font-size="12" font-weight="bold" font-family="Arial, sans-serif" letter-spacing="1" text-anchor="middle">${textOverlay}</text>
+    </svg>`;
+  } else {
+    /* Modelo Urbano Apache Vip (Modo Linha - Imagem 4) */
+    busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
+      <rect x="6" y="6" width="108" height="248" rx="16" fill="#000000" stroke="#334155" stroke-width="4"/>
+      
+      <path d="M 10,25 C 10,12 25,8 60,8 C 95,8 110,12 110,25 L 110,235 C 110,248 95,252 60,252 C 25,252 10,248 10,235 Z" fill="${bodyColor}" />
+      
+      <path d="M 10,130 L 110,130 L 110,235 C 110,248 95,252 60,252 C 25,252 10,248 10,235 Z" fill="${stripeColor}" opacity="0.85"/>
+      
+      <path d="M 15,18 Q 60,12 105,18 L 105,52 Q 60,46 15,52 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+      
+      <rect x="35" y="70" width="50" height="30" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+      <rect x="40" y="180" width="40" height="20" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+
+      <rect x="0" y="24" width="9" height="20" rx="3" fill="#0f172a"/>
+      <rect x="111" y="24" width="9" height="20" rx="3" fill="#0f172a"/>
+
+      <text x="-135" y="65" transform="rotate(-90)" fill="#ffffff" font-size="13" font-weight="900" font-family="Arial, sans-serif" letter-spacing="2" text-anchor="middle">${textOverlay}</text>
+    </svg>`;
+  }
+
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(busSvg);
 }
 
 function initMap(startCoords) {
@@ -704,9 +877,11 @@ function initMap(startCoords) {
   });
 
   const preset = COLOR_PRESETS[activePresetKey] || COLOR_PRESETS['vermelho'];
+  const isDD = (currentGameMode === 'free');
+
   const busImg = document.createElement('img');
   busImg.className = 'bus-marker-img';
-  busImg.src = getBusSvgDataUrl(preset.bodyColor, preset.stripeColor);
+  busImg.src = getBusSvgDataUrl(preset.bodyColor, preset.stripeColor, isDD, busLabelText);
 
   busMarker = new maplibregl.Marker({ 
     element: busImg, 
