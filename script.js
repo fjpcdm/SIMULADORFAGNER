@@ -1,3 +1,8 @@
+// ============================================================
+// ARQUIVO: script.js
+// MOTOR COM DETECÇÃO SEQUENCIAL E CORREÇÃO DE ANTECIPAÇÃO
+// ============================================================
+
 const cssStyles = `
   * {
     box-sizing: border-box !important;
@@ -9,11 +14,23 @@ const cssStyles = `
   }
 
   html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden !important;
     background-color: #0f172a;
     touch-action: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
   }
 
   .setup-modal-overlay {
@@ -54,7 +71,6 @@ const cssStyles = `
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 10px;
   }
 
   .btn-mode-select {
@@ -68,7 +84,6 @@ const cssStyles = `
     font-weight: bold;
     cursor: pointer;
     text-align: center;
-    transition: background 0.2s;
   }
 
   .btn-mode-select:active {
@@ -108,7 +123,6 @@ const cssStyles = `
     font-size: 1rem;
     cursor: pointer;
     margin-top: 10px;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
 
   .btn-back-menu {
@@ -122,16 +136,6 @@ const cssStyles = `
     font-size: 0.85rem;
     cursor: pointer;
     margin-top: 8px;
-  }
-
-  #map {
-    width: 100vw;
-    height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: auto !important;
-    z-index: 1;
   }
 
   .map-instruction-banner {
@@ -149,28 +153,57 @@ const cssStyles = `
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #ffffff !important;
     text-align: center !important;
-    pointer-events: auto !important;
-    white-space: normal !important;
     max-width: 90vw !important;
   }
 
-  /* HUD Transparente */
+  /* MINI BARRA TOPO PARA MOBILE */
+  .mobile-top-bar {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 999999;
+    color: #ffffff;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    white-space: nowrap;
+  }
+
+  .btn-toggle-hud {
+    background: #3b82f6;
+    border: none;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
   .hud {
     position: absolute !important;
     top: 15px !important;
     left: 15px !important;
     z-index: 999999 !important;
-    background: rgba(15, 23, 42, 0.55) !important;
+    background: rgba(15, 23, 42, 0.88) !important;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: #ffffff !important;
     padding: 12px !important;
     border-radius: 12px !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
-    width: 240px;
+    width: 260px;
     max-width: calc(100vw - 30px);
-    pointer-events: auto !important;
+    transition: transform 0.25s ease, opacity 0.25s ease;
   }
 
   .hud h2 {
@@ -178,11 +211,10 @@ const cssStyles = `
     margin-bottom: 6px;
     text-align: center;
     color: #f59e0b;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
 
   .line-badge {
-    background: rgba(30, 41, 59, 0.7);
+    background: rgba(30, 41, 59, 0.8);
     border: 1px solid #38bdf8;
     color: #38bdf8;
     padding: 6px 10px;
@@ -190,7 +222,28 @@ const cssStyles = `
     font-weight: bold;
     font-size: 0.8rem;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+  }
+
+  .pax-status-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pax-status-main {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+  }
+
+  .pax-status-main strong {
+    font-size: 1.15rem;
+    color: #38bdf8;
   }
 
   .trip-info-box {
@@ -199,13 +252,14 @@ const cssStyles = `
     border: 1px solid rgba(51, 65, 85, 0.8);
     border-radius: 8px;
     font-size: 0.8rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .trip-km-row {
     display: flex;
     justify-content: space-between;
     color: #cbd5e1;
+    margin-bottom: 4px;
   }
 
   .trip-km-val {
@@ -213,28 +267,11 @@ const cssStyles = `
     color: #38bdf8;
   }
 
-  .pax-control-box {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(30, 41, 59, 0.7);
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 0.85rem;
-  }
-
-  .btn-pax {
-    width: 36px;
-    height: 36px;
-    background: #3b82f6;
-    border: none;
-    color: white;
+  .trip-timer-val {
     font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    touch-action: manipulation;
+    color: #10b981;
+    font-family: monospace;
+    font-size: 0.95rem;
   }
 
   .trip-status-badge {
@@ -244,6 +281,7 @@ const cssStyles = `
     font-weight: bold;
     font-size: 0.85rem;
     text-align: center;
+    margin-bottom: 8px;
   }
 
   .trip-status-badge.running {
@@ -256,10 +294,32 @@ const cssStyles = `
     color: #ffffff;
   }
 
+  .btn-trip-toggle {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    margin-bottom: 8px;
+    color: #ffffff;
+    transition: 0.2s;
+  }
+
+  .btn-trip-toggle.start {
+    background: #10b981;
+  }
+
+  .btn-trip-toggle.stop {
+    background: #f59e0b;
+    color: #0f172a;
+  }
+
   .zoom-controls {
     display: flex;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 8px;
   }
 
   .btn-zoom {
@@ -272,7 +332,6 @@ const cssStyles = `
     border: 1px solid #60a5fa;
     border-radius: 6px;
     cursor: pointer;
-    touch-action: manipulation;
   }
 
   .btn-zoom.active {
@@ -284,7 +343,7 @@ const cssStyles = `
   .btn-exit-game {
     width: 100%;
     padding: 8px;
-    margin-top: 10px;
+    margin-top: 8px;
     background: rgba(220, 38, 38, 0.85);
     border: 1px solid #f87171;
     border-radius: 6px;
@@ -295,38 +354,33 @@ const cssStyles = `
     text-align: center;
   }
 
-  /* Velocímetro */
   .speedometer-container {
     position: absolute !important;
     bottom: 20px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 999999 !important;
-    background: rgba(10, 15, 25, 0.75) !important;
+    background: rgba(10, 15, 25, 0.85) !important;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     color: #38bdf8 !important;
-    padding: 10px 20px !important;
+    padding: 8px 20px !important;
     border-radius: 25px !important;
     font-size: 1.6rem !important;
     font-weight: 800 !important;
-    border: 3px solid #38bdf8 !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    border: 2px solid #38bdf8 !important;
     display: flex;
     align-items: baseline;
     gap: 6px;
-    pointer-events: auto !important;
-    letter-spacing: -1px;
+    pointer-events: none;
   }
 
   .speed-unit {
     font-size: 0.85rem;
     font-weight: 600;
     color: #94a3b8;
-    letter-spacing: 0;
   }
 
-  /* Controles On-Screen Esquerda */
   .mobile-controls-left {
     position: absolute !important;
     bottom: 20px !important;
@@ -334,10 +388,8 @@ const cssStyles = `
     z-index: 999999 !important;
     display: flex;
     gap: 10px;
-    pointer-events: auto !important;
   }
 
-  /* Controles On-Screen Direita */
   .mobile-controls-right {
     position: absolute !important;
     bottom: 20px !important;
@@ -346,7 +398,6 @@ const cssStyles = `
     display: flex;
     flex-direction: column;
     gap: 10px;
-    pointer-events: auto !important;
   }
 
   .btn-drive-touch {
@@ -362,8 +413,6 @@ const cssStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    touch-action: manipulation;
     cursor: pointer;
   }
 
@@ -386,10 +435,6 @@ const cssStyles = `
     background: rgba(239, 68, 68, 0.35);
   }
 
-  .btn-drive-touch.btn-brake:active {
-    background: rgba(239, 68, 68, 0.7);
-  }
-
   .alert-toast {
     position: fixed;
     top: 70px;
@@ -402,9 +447,28 @@ const cssStyles = `
     font-weight: bold;
     font-size: 0.9rem;
     z-index: 10000000;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
     text-align: center;
     display: none;
+  }
+
+  .stop-marker-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .stop-marker-label {
+    background: #f59e0b;
+    color: #0f172a;
+    font-weight: bold;
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #ffffff;
+    white-space: nowrap;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.7);
   }
 
   .maplibregl-marker {
@@ -413,10 +477,43 @@ const cssStyles = `
   }
 
   .bus-marker-img {
-    width: 36px !important;
-    height: 78px !important;
+    width: 24px !important;
+    height: 52px !important;
     display: block !important;
-    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.95));
+    filter: drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.95));
+  }
+
+  /* ADAPTAÇÃO PARA VERSÃO MOBILE */
+  @media (max-width: 768px) {
+    .mobile-top-bar {
+      display: flex;
+    }
+
+    .hud {
+      top: 52px !important;
+      left: 50% !important;
+      transform: translateX(-50%) translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hud.mobile-visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .speedometer-container {
+      bottom: 22px !important;
+      padding: 6px 16px !important;
+      font-size: 1.4rem !important;
+    }
+
+    .btn-drive-touch {
+      width: 54px;
+      height: 54px;
+      font-size: 1.25rem;
+    }
   }
 `;
 
@@ -436,45 +533,32 @@ function showAlert(message) {
   }, 4000);
 }
 
-const COORDS = {
-  IBIRITE: [-44.06613054917195, -20.0174636532536],
-  SARZEDO: [-44.13656568163484, -20.03452014074093],
-  CONCEICAO_ITAGUA: [-44.23648860787897, -20.14999656639113]
-};
-
-const LINES_DATA = {
-  '301C': { name: '301 C - Terminal Ibirité x BH - Via Amazonas', type: 'urbano', startCoords: COORDS.IBIRITE },
-  '302H': { name: '302 H - Terminal Ibirité x Hospitais', type: 'urbano', startCoords: COORDS.IBIRITE },
-  '303M': { name: '303 M - Terminal Ibirité x Estação Eldorado', type: 'urbano', startCoords: COORDS.IBIRITE },
-  '304M': { name: '304 M - Terminal Ibirité x Estação Eldorado via Lago Azul', type: 'urbano', startCoords: COORDS.IBIRITE },
-  '306R': { name: '306 R - Terminal Ibirité x BH Shopping', type: 'urbano', startCoords: COORDS.IBIRITE },
-  '313M': { name: '313 M - Terminal Sarzedo x Estação Eldorado', type: 'urbano', startCoords: COORDS.SARZEDO },
-  '314M': { name: '314 M - Terminal Sarzedo x Estação Eldorado via Renato Azeredo', type: 'urbano', startCoords: COORDS.SARZEDO },
-  '833R': { name: '833R - Terminal Sarzedo x Carrefour', type: 'urbano', startCoords: COORDS.SARZEDO },
-  '3787': { name: '3787 - Conceição de Itaguá x Belo Horizonte', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '3785': { name: '3785 - Brumadinho x Terminal Sarzedo', type: 'rodoviario', startCoords: COORDS.CONCEICAO_ITAGUA },
-  '310C': { name: '310 C - Terminal Sarzedo x Hospitais', type: 'urbano', startCoords: COORDS.SARZEDO }
-};
-
 const COLOR_PRESETS = {
   'vermelho': { name: 'Vermelho', bodyColor: '#dc2626', stripeColor: '#ffffff' },
   'azul': { name: 'Azul', bodyColor: '#2563eb', stripeColor: '#ffffff' },
   'laranja': { name: 'Laranja', bodyColor: '#ea580c', stripeColor: '#ffffff' },
   'amarelo': { name: 'Amarelo', bodyColor: '#eab308', stripeColor: '#ffffff' },
-  'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#ffffff' },
-  'branco': { name: 'Branco', bodyColor: '#f8fafc', stripeColor: '#94a3b8' },
-  'roxo_branco': { name: 'Roxo e Branco', bodyColor: '#7c3aed', stripeColor: '#ffffff' },
-  'verde_preto': { name: 'Verde e Preto', bodyColor: '#15803d', stripeColor: '#0f172a' },
-  'cinza_azul': { name: 'Cinza com Azul', bodyColor: '#64748b', stripeColor: '#0284c7' }
+  'verde': { name: 'Verde', bodyColor: '#16a34a', stripeColor: '#ffffff' }
 };
+
+function getLinesDatabase() {
+  return window.linesDatabase || {};
+}
+
+function extractCoordinates(rawTrajeto) {
+  if (!rawTrajeto) return [];
+  if (Array.isArray(rawTrajeto) && Array.isArray(rawTrajeto[0]) && typeof rawTrajeto[0][0] === 'number') {
+    return rawTrajeto;
+  }
+  if (Array.isArray(rawTrajeto) && rawTrajeto[0] && rawTrajeto[0].features) {
+    const lineFeature = rawTrajeto[0].features.find(f => f.geometry && f.geometry.type === 'LineString');
+    if (lineFeature) return lineFeature.geometry.coordinates;
+  }
+  return [];
+}
 
 const setupModal = document.createElement('div');
 setupModal.className = 'setup-modal-overlay';
-
-let lineOptionsHtml = '';
-for (const key in LINES_DATA) {
-  lineOptionsHtml += `<option value="${key}">${LINES_DATA[key].name}</option>`;
-}
 
 let colorOptionsHtml = '';
 for (const key in COLOR_PRESETS) {
@@ -483,7 +567,7 @@ for (const key in COLOR_PRESETS) {
 
 setupModal.innerHTML = `
   <div class="setup-card" id="cardMainMenu">
-    <h2>🚍 Simulator - Menu Principal</h2>
+    <h2>🚍 Simulador de Ônibus</h2>
     <div class="mode-selection-box">
       <button class="btn-mode-select" id="btnSelectLineMode">📍 Modo Linha</button>
       <button class="btn-mode-select" id="btnSelectFreeMode">🗺️ Modo Livre</button>
@@ -494,11 +578,7 @@ setupModal.innerHTML = `
     <h2>🚍 Modo Linha</h2>
     <div class="form-group">
       <label>Linha de Operação:</label>
-      <select id="selectLine">${lineOptionsHtml}</select>
-    </div>
-    <div class="form-group">
-      <label>Número do Carro / Prefixo:</label>
-      <input type="text" id="inputBusNumber" placeholder="Ex: 20450" value="29435" />
+      <select id="selectLine"></select>
     </div>
     <div class="form-group">
       <label>Cor do Ônibus:</label>
@@ -511,29 +591,63 @@ setupModal.innerHTML = `
   <div class="setup-card" id="cardFreeMode" style="display: none;">
     <h2>🗺️ Modo Livre</h2>
     <div class="form-group">
-      <label>Nome da Empresa:</label>
-      <input type="text" id="inputCompanyName" placeholder="Ex: Viação Gontijo" value="MARCOPOLO" />
-    </div>
-    <div class="form-group">
       <label>Cor do Ônibus:</label>
       <select id="selectColorFree">${colorOptionsHtml}</select>
     </div>
     <div class="form-group">
-      <label>Pesquisar Local / Cidade / Rua:</label>
-      <input type="text" id="inputFreeLocation" placeholder="Ex: Praça Sete, Belo Horizonte" value="Ibirité, MG" />
+      <label>Pesquisar Local / Cidade:</label>
+      <input type="text" id="inputFreeLocation" value="Ibirité, MG" />
     </div>
-    <button class="btn-start-sim" id="btnStartFreeMode">Carregar Mapa e Dirigir</button>
+    <button class="btn-start-sim" id="btnStartFreeMode">Iniciar</button>
     <button class="btn-back-menu" id="btnBackFree">Voltar</button>
   </div>
 `;
 document.body.appendChild(setupModal);
 
+function refreshLinesDropdown() {
+  const select = document.getElementById('selectLine');
+  if (!select) return;
+
+  const db = getLinesDatabase();
+  const keys = Object.keys(db);
+
+  select.innerHTML = '';
+  if (keys.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = "";
+    opt.textContent = "Carregando linhas do dados_rotas.js...";
+    select.appendChild(opt);
+    return;
+  }
+
+  keys.forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = db[key].nome;
+    select.appendChild(opt);
+  });
+}
+
+refreshLinesDropdown();
+setTimeout(refreshLinesDropdown, 250);
+setTimeout(refreshLinesDropdown, 750);
+
 const mapBanner = document.createElement('div');
 mapBanner.className = 'map-instruction-banner';
 mapBanner.id = 'mapInstructionBanner';
-mapBanner.innerHTML = '⚠️ Para iniciar a viagem, adicione pelo menos 1 passageiro no painel (+)!';
 mapBanner.style.display = 'none';
 document.body.appendChild(mapBanner);
+
+// Mini-barra topo para celular
+const mobileTopBar = document.createElement('div');
+mobileTopBar.className = 'mobile-top-bar';
+mobileTopBar.id = 'mobileTopBar';
+mobileTopBar.innerHTML = `
+  <span>⏱️ <strong id="miniTimerDisplay" style="color:#10b981; font-family:monospace;">00:00</strong></span>
+  <span>📍 <strong id="miniKmDisplay" style="color:#38bdf8;">0.00 km</strong></span>
+  <button class="btn-toggle-hud" id="btnToggleHud">📊 Menu</button>
+`;
+document.body.appendChild(mobileTopBar);
 
 let hudContainer = document.createElement('div');
 hudContainer.className = 'hud';
@@ -541,25 +655,35 @@ hudContainer.style.display = 'none';
 document.body.appendChild(hudContainer);
 
 hudContainer.innerHTML = `
-  <h2>🚍 Operação de Linha</h2>
+  <h2>🚍 Linha Operacional</h2>
   <div class="line-badge" id="lineBadgeDisplay">---</div>
 
-  <div class="pax-control-box">
-    <span>👥 Pax: <strong id="paxCountDisplay">0</strong> / <span id="maxPaxDisplay">80</span></span>
-    <div>
-      <button class="btn-pax" id="btnPaxSub">-</button>
-      <button class="btn-pax" id="btnPaxAdd">+</button>
+  <!-- Cartão de Passageiros (Ativo exclusivamente no Modo Linha) -->
+  <div class="pax-status-card" id="cardPaxStatus">
+    <div class="pax-status-main">
+      Passageiros a Bordo:<br>
+      <strong id="paxCountDisplay">0</strong> / <span id="maxPaxDisplay">70</span>
+    </div>
+    <div style="text-align: right; font-size: 0.75rem; color: #94a3b8;">
+      Ocupação:<br>
+      <strong id="paxPercentDisplay" style="color: #10b981; font-size: 0.95rem;">0%</strong>
     </div>
   </div>
 
   <div class="trip-info-box">
     <div class="trip-km-row">
+      <span>Tempo de Viagem:</span>
+      <span class="trip-timer-val" id="tripTimerDisplay">00:00</span>
+    </div>
+    <div class="trip-km-row">
       <span>Percorrido:</span>
       <span class="trip-km-val" id="kmCoveredDisplay">0.00 km</span>
     </div>
+    <div id="stopInfoDynamic"></div>
   </div>
 
-  <div class="trip-status-badge stopped" id="tripStatusBadge">Aguardando Passageiro</div>
+  <div class="trip-status-badge stopped" id="tripStatusBadge">Aguardando Partida</div>
+  <button class="btn-trip-toggle start" id="btnTripToggle">▶️ Dar Entrada na Viagem</button>
 
   <div class="zoom-controls">
     <button id="btnZoomNear" class="btn-zoom active">🔍 Perto</button>
@@ -596,75 +720,122 @@ document.body.appendChild(rightControlsContainer);
 let map = null;
 let busMarker = null;
 let animationFrameId = null;
-
-const CAMERA_SETTINGS = {
-  NEAR: { zoom: 19.8, pitch: 0 }, 
-  FAR: { zoom: 17.8, pitch: 0 }
-};
-
-let currentZoom = CAMERA_SETTINGS.NEAR.zoom;
-let currentPitch = CAMERA_SETTINGS.NEAR.pitch;
+let currentVisibleMarker = null; // Guarda o marcador do ponto ativo
 
 let currentGameMode = 'line'; 
 let busLabelText = '';
-let selectedLineKey = '301C';
-let passengerCount = 0;
-let maxPassengers = 80;
+let passengerCount = 10;
+let maxPassengers = 70; // 70 Urbano | 42 Rodoviário
 let activePresetKey = 'vermelho';
 
+let activePath = [];
+let activeStops = [];
 let busLng = 0;
 let busLat = 0;
-let speed = 0;
-let heading = 0;
+
+let currentSpeedKmh = 0;
+let isAutopilotMoving = false;
+
+let cruiseSpeedKmh = 70;
+let boostSpeedKmh = 90;
+
+let targetHeading = 0;
+let smoothHeading = 0;
 let distanceCoveredKm = 0;
-let reverseDelayCounter = 0;
 
-const KMH_CONVERSION_FACTOR = 8.33; 
-const CRUISE_SPEED_KMH = 8;
-const CRUISE_SPEED_UNITS = CRUISE_SPEED_KMH / KMH_CONVERSION_FACTOR; 
-const MAX_SPEED_KMH = 60;
-const MAX_SPEED_UNITS = MAX_SPEED_KMH / KMH_CONVERSION_FACTOR; 
-const MAX_REVERSE_KMH = 15;
-const MAX_REVERSE_UNITS = -(MAX_REVERSE_KMH / KMH_CONVERSION_FACTOR);
+let currentSegIndex = 0;
+let segProgressMeters = 0;
+let currentSegLength = 0;
 
-const ACCELERATION = 0.003; 
-const BRAKING_FORCE = 0.03; 
-const ROTATION_SPEED = 0.8; 
+let isAtBusStop = false;
+let isLineFinished = false;
+let isTripActive = false;
+
+let tripStartTime = null;
+let tripTimerInterval = null;
 
 const keysPressed = { Up: false, Down: false, Left: false, Right: false };
 
-function bindTouchEvents(elementId, keyName) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
+function calculateBearing(startCoord, endCoord) {
+  const [startLng, startLat] = startCoord;
+  const [endLng, endLat] = endCoord;
 
-  const startPress = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (keyName === 'Up' && !keysPressed.Up) {
-      handleAccelerate();
-    }
-    keysPressed[keyName] = true;
-  };
+  const y = Math.sin((endLng - startLng) * Math.PI / 180) * Math.cos(endLat * Math.PI / 180);
+  const x = Math.cos(startLat * Math.PI / 180) * Math.sin(endLat * Math.PI / 180) -
+            Math.sin(startLat * Math.PI / 180) * Math.cos(endLat * Math.PI / 180) * Math.cos((endLng - startLng) * Math.PI / 180);
 
-  const endPress = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    keysPressed[keyName] = false;
-  };
-
-  el.addEventListener('pointerdown', startPress);
-  el.addEventListener('pointerup', endPress);
-  el.addEventListener('pointercancel', endPress);
-  el.addEventListener('pointerleave', endPress);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
-bindTouchEvents('btnTouchUp', 'Up');
-bindTouchEvents('btnTouchDown', 'Down');
-bindTouchEvents('btnTouchLeft', 'Left');
-bindTouchEvents('btnTouchRight', 'Right');
+function lerpHeading(current, target, factor) {
+  let diff = (target - current + 360) % 360;
+  if (diff > 180) diff -= 360;
+  return (current + diff * factor + 360) % 360;
+}
 
-/* Navegação da Tela Inicial */
+function getMetersBetween(coord1, coord2) {
+  const [lon1, lat1] = coord1;
+  const [lon2, lat2] = coord2;
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function startTripTimer() {
+  tripStartTime = Date.now();
+  if (tripTimerInterval) clearInterval(tripTimerInterval);
+  tripTimerInterval = setInterval(() => {
+    if (!tripStartTime) return;
+    const diff = Math.floor((Date.now() - tripStartTime) / 1000);
+    const mins = String(Math.floor(diff / 60)).padStart(2, '0');
+    const secs = String(diff % 60).padStart(2, '0');
+    const timeFormatted = `${mins}:${secs}`;
+    document.getElementById('tripTimerDisplay').textContent = timeFormatted;
+    document.getElementById('miniTimerDisplay').textContent = timeFormatted;
+  }, 1000);
+}
+
+function stopTripTimer() {
+  if (tripTimerInterval) {
+    clearInterval(tripTimerInterval);
+    tripTimerInterval = null;
+  }
+}
+
+// Botão para abrir/fechar painel no celular
+document.getElementById('btnToggleHud').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  hudContainer.classList.toggle('mobile-visible');
+});
+
+function bindTouch(elementId, keyName) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (keyName === 'Up') handleAccelerate();
+    keysPressed[keyName] = true;
+  });
+  const stopTouch = (e) => {
+    e.preventDefault();
+    keysPressed[keyName] = false;
+  };
+  el.addEventListener('pointerup', stopTouch);
+  el.addEventListener('pointercancel', stopTouch);
+  el.addEventListener('pointerleave', stopTouch);
+}
+
+bindTouch('btnTouchUp', 'Up');
+bindTouch('btnTouchDown', 'Down');
+bindTouch('btnTouchLeft', 'Left');
+bindTouch('btnTouchRight', 'Right');
+
 document.getElementById('btnSelectLineMode').addEventListener('click', () => {
+  refreshLinesDropdown();
   document.getElementById('cardMainMenu').style.display = 'none';
   document.getElementById('cardLineMode').style.display = 'block';
 });
@@ -684,67 +855,136 @@ document.getElementById('btnBackFree').addEventListener('click', () => {
   document.getElementById('cardMainMenu').style.display = 'block';
 });
 
-/* Confirmação do Modo Linha */
-document.getElementById('btnStartLineMode').addEventListener('click', () => {
-  currentGameMode = 'line';
-  selectedLineKey = document.getElementById('selectLine').value;
-  activePresetKey = document.getElementById('selectColorLine').value || 'vermelho';
-  const busNumber = document.getElementById('inputBusNumber').value.trim() || '29435';
-  
-  busLabelText = busNumber;
-
-  const lineData = LINES_DATA[selectedLineKey] || LINES_DATA['301C'];
-  maxPassengers = lineData.type === 'rodoviario' ? 46 : 80;
-  document.getElementById('maxPaxDisplay').textContent = maxPassengers;
-
-  document.getElementById('lineBadgeDisplay').textContent = `${lineData.name} - Carro ${busNumber}`;
-  
-  const startCoords = lineData.startCoords;
-  startSimulation(startCoords);
+const btnTripToggle = document.getElementById('btnTripToggle');
+btnTripToggle.addEventListener('click', () => {
+  if (!isTripActive) {
+    isTripActive = true;
+    isLineFinished = false;
+    isAtBusStop = false;
+    isAutopilotMoving = true;
+    startTripTimer();
+    updateTripStatus();
+  } else {
+    isTripActive = false;
+    isAutopilotMoving = false;
+    currentSpeedKmh = 0;
+    stopTripTimer();
+    updateTripStatus();
+  }
 });
 
-/* Confirmação do Modo Livre */
-document.getElementById('btnStartFreeMode').addEventListener('click', async () => {
-  currentGameMode = 'free';
-  const companyName = document.getElementById('inputCompanyName').value.trim() || 'MARCOPOLO';
-  activePresetKey = document.getElementById('selectColorFree').value || 'vermelho';
-  const locationQuery = document.getElementById('inputFreeLocation').value.trim();
+document.getElementById('btnStartLineMode').addEventListener('click', () => {
+  currentGameMode = 'line';
+  const selectedKey = document.getElementById('selectLine').value;
+  activePresetKey = document.getElementById('selectColorLine').value || 'vermelho';
+  busLabelText = '29435';
 
-  busLabelText = companyName;
-
-  if (!locationQuery) {
-    showAlert("Por favor, digite um local para pesquisar.");
+  const db = getLinesDatabase();
+  const lineData = db[selectedKey] || Object.values(db)[0];
+  if (!lineData) {
+    showAlert("Nenhuma linha cadastrada disponível no dados_rotas.js.");
     return;
   }
 
-  maxPassengers = 80;
+  const isRodoviario = lineData.tipo === 'rodoviario';
+  cruiseSpeedKmh = isRodoviario ? 100 : 70;
+  boostSpeedKmh = isRodoviario ? 120 : 90;
+  maxPassengers = isRodoviario ? 42 : 70;
+  passengerCount = Math.floor(maxPassengers * 0.15);
+
   document.getElementById('maxPaxDisplay').textContent = maxPassengers;
-  document.getElementById('lineBadgeDisplay').textContent = `Modo Livre: ${companyName}`;
+
+  activePath = extractCoordinates(lineData.trajeto);
+  
+  activeStops = (lineData.pontos || []).map((s, idx) => {
+    let closestIndex = 0;
+    let minDistance = Infinity;
+    for (let i = 0; i < activePath.length; i++) {
+      const d = getMetersBetween(s.coords, activePath[i]);
+      if (d < minDistance) {
+        minDistance = d;
+        closestIndex = i;
+      }
+    }
+    return {
+      ...s,
+      targetPathIndex: closestIndex,
+      visited: (idx === 0)
+    };
+  });
+
+  if (activePath.length < 2) {
+    showAlert("A linha selecionada não possui coordenadas de trajeto válidas.");
+    return;
+  }
+
+  document.getElementById('lineBadgeDisplay').textContent = `${lineData.nome}`;
+  currentSegIndex = 0;
+  segProgressMeters = 0;
+  currentSegLength = getMetersBetween(activePath[0], activePath[1]);
+  isAtBusStop = false;
+  isLineFinished = false;
+  isTripActive = false;
+  isAutopilotMoving = false;
+  currentSpeedKmh = 0;
+  distanceCoveredKm = 0;
+
+  targetHeading = calculateBearing(activePath[0], activePath[1]);
+  smoothHeading = targetHeading;
+
+  updateTripStatus();
+  startSimulation(activePath[0]);
+});
+
+document.getElementById('btnStartFreeMode').addEventListener('click', async () => {
+  currentGameMode = 'free';
+  busLabelText = 'ÔNIBUS';
+  activePresetKey = document.getElementById('selectColorFree').value || 'vermelho';
+  const locationQuery = document.getElementById('inputFreeLocation').value.trim();
+
+  cruiseSpeedKmh = 70;
+  boostSpeedKmh = 90;
+  document.getElementById('lineBadgeDisplay').textContent = `Modo Livre`;
+
+  currentSpeedKmh = 0;
+  isAutopilotMoving = false;
+  distanceCoveredKm = 0;
+  updateTripStatus();
+  startTripTimer();
 
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationQuery)}`);
-    const data = await response.json();
-
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationQuery)}`);
+    const data = await res.json();
     if (data && data.length > 0) {
-      const startCoords = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-      startSimulation(startCoords);
+      startSimulation([parseFloat(data[0].lon), parseFloat(data[0].lat)]);
     } else {
-      showAlert("Local não encontrado. Usando coordenadas padrão.");
-      startSimulation(COORDS.IBIRITE);
+      startSimulation([-44.06661, -20.01744]);
     }
   } catch (err) {
-    showAlert("Erro na busca de local. Usando coordenadas padrão.");
-    startSimulation(COORDS.IBIRITE);
+    startSimulation([-44.06661, -20.01744]);
   }
 });
 
 function startSimulation(startCoords) {
   setupModal.style.display = 'none';
   hudContainer.style.display = 'block';
+  hudContainer.classList.remove('mobile-visible');
   speedBox.style.display = 'flex';
-  leftControlsContainer.style.display = 'flex';
   rightControlsContainer.style.display = 'flex';
-  mapBanner.style.display = 'block';
+
+  const cardPax = document.getElementById('cardPaxStatus');
+
+  if (currentGameMode === 'free') {
+    leftControlsContainer.style.display = 'flex';
+    document.getElementById('stopInfoDynamic').innerHTML = '';
+    btnTripToggle.style.display = 'none';
+    if (cardPax) cardPax.style.display = 'none';
+  } else {
+    leftControlsContainer.style.display = 'none';
+    btnTripToggle.style.display = 'block';
+    if (cardPax) cardPax.style.display = 'flex';
+    updateStopInfoDisplay();
+  }
 
   busLng = startCoords[0];
   busLat = startCoords[1];
@@ -752,31 +992,84 @@ function startSimulation(startCoords) {
   initMap(startCoords);
 }
 
+function updateStopInfoDisplay() {
+  const nextStop = activeStops.find(s => !s.visited);
+  const nextName = nextStop ? nextStop.nome : "Fim da Linha";
+  document.getElementById('stopInfoDynamic').innerHTML = `
+    <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <span style="color: #94a3b8;">Próxima Parada:</span><br>
+      <strong style="color: #f59e0b;">🚏 ${nextName}</strong>
+    </div>
+  `;
+}
+
+// ATUALIZAÇÃO DINÂMICA DO MARCADOR POR PROXIMIDADE (MENOS DE 100M)
+function atualizarMarcadorProximoPonto(busCoords) {
+  if (currentGameMode !== 'line' || !map) return;
+
+  const nextStop = activeStops.find(s => !s.visited);
+
+  if (!nextStop) {
+    if (currentVisibleMarker) {
+      currentVisibleMarker.remove();
+      currentVisibleMarker = null;
+    }
+    return;
+  }
+
+  const distToStop = getMetersBetween(busCoords, nextStop.coords);
+
+  // Aparece apenas se estiver a menos de 100 metros
+  if (distToStop <= 100.0) {
+    if (!currentVisibleMarker || currentVisibleMarker._stopId !== nextStop.id) {
+      if (currentVisibleMarker) currentVisibleMarker.remove();
+
+      const el = document.createElement('div');
+      el.className = 'stop-marker-container';
+      el.innerHTML = `<div class="stop-marker-label">🚏 ${nextStop.nome}</div>`;
+
+      currentVisibleMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat(nextStop.coords)
+        .addTo(map);
+      currentVisibleMarker._stopId = nextStop.id;
+    }
+  } else {
+    // Esconde caso ainda esteja distante
+    if (currentVisibleMarker) {
+      currentVisibleMarker.remove();
+      currentVisibleMarker = null;
+    }
+  }
+}
+
 function exitGame() {
+  stopTripTimer();
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
-
+  if (currentVisibleMarker) {
+    currentVisibleMarker.remove();
+    currentVisibleMarker = null;
+  }
+  if (busMarker) {
+    busMarker.remove();
+    busMarker = null;
+  }
   if (map) {
     map.remove();
     map = null;
   }
-
-  busMarker = null;
-  speed = 0;
-  heading = 0;
+  currentSpeedKmh = 0;
+  isAutopilotMoving = false;
+  isTripActive = false;
+  targetHeading = 0;
+  smoothHeading = 0;
   distanceCoveredKm = 0;
-  passengerCount = 0;
-
-  keysPressed.Up = false;
-  keysPressed.Down = false;
-  keysPressed.Left = false;
-  keysPressed.Right = false;
-
+  document.getElementById('tripTimerDisplay').textContent = '00:00';
+  document.getElementById('miniTimerDisplay').textContent = '00:00';
   document.getElementById('kmCoveredDisplay').textContent = '0.00 km';
-  document.getElementById('paxCountDisplay').textContent = '0';
-  document.getElementById('speedValue').textContent = '0';
+  document.getElementById('miniKmDisplay').textContent = '0.00 km';
 
   hudContainer.style.display = 'none';
   speedBox.style.display = 'none';
@@ -792,251 +1085,355 @@ function exitGame() {
 
 document.getElementById('btnExitGame').addEventListener('click', exitGame);
 
-/* Gerador de SVG do Ônibus por Modelo e Modo */
-function getBusSvgDataUrl(bodyColor, stripeColor, isDoubleDecker, textOverlay) {
-  let busSvg = '';
-
-  if (isDoubleDecker) {
-    /* Modelo Rodoviário Double Decker (Modo Livre - Imagem 3) */
-    busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
-      <rect x="6" y="6" width="108" height="248" rx="20" fill="#0b0f19" stroke="#1e293b" stroke-width="4"/>
-      
-      <path d="M 10,30 C 10,12 20,8 60,8 C 100,8 110,12 110,30 L 110,235 C 110,248 98,252 60,252 C 22,252 10,248 10,235 Z" fill="${bodyColor}" />
-      
-      <path d="M 12,90 L 108,90 L 108,180 L 12,210 Z" fill="${stripeColor}" opacity="0.25"/>
-      <path d="M 10,160 Q 60,185 110,160 L 110,235 C 110,248 98,252 60,252 C 22,252 10,248 10,235 Z" fill="${stripeColor}" opacity="0.8"/>
-
-      <path d="M 15,22 C 25,14 60,12 95,14 C 105,22 105,38 105,38 L 15,38 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
-      <path d="M 15,44 L 105,44 L 105,68 L 15,68 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
-      
-      <path d="M 2,28 C -2,28 -2,42 8,46 L 14,42 Z" fill="#0f172a"/>
-      <path d="M 118,28 C 122,28 122,42 112,46 L 106,42 Z" fill="#0f172a"/>
-
-      <rect x="28" y="80" width="64" height="110" rx="8" fill="#1e293b" opacity="0.6" stroke="#ffffff" stroke-width="1"/>
-
-      <text x="-135" y="65" transform="rotate(-90)" fill="#ffffff" font-size="12" font-weight="bold" font-family="Arial, sans-serif" letter-spacing="1" text-anchor="middle">${textOverlay}</text>
-    </svg>`;
-  } else {
-    /* Modelo Urbano Apache Vip (Modo Linha - Imagem 4) */
-    busSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
-      <rect x="6" y="6" width="108" height="248" rx="16" fill="#000000" stroke="#334155" stroke-width="4"/>
-      
-      <path d="M 10,25 C 10,12 25,8 60,8 C 95,8 110,12 110,25 L 110,235 C 110,248 95,252 60,252 C 25,252 10,248 10,235 Z" fill="${bodyColor}" />
-      
-      <path d="M 10,130 L 110,130 L 110,235 C 110,248 95,252 60,252 C 25,252 10,248 10,235 Z" fill="${stripeColor}" opacity="0.85"/>
-      
-      <path d="M 15,18 Q 60,12 105,18 L 105,52 Q 60,46 15,52 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
-      
-      <rect x="35" y="70" width="50" height="30" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
-      <rect x="40" y="180" width="40" height="20" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
-
-      <rect x="0" y="24" width="9" height="20" rx="3" fill="#0f172a"/>
-      <rect x="111" y="24" width="9" height="20" rx="3" fill="#0f172a"/>
-
-      <text x="-135" y="65" transform="rotate(-90)" fill="#ffffff" font-size="13" font-weight="900" font-family="Arial, sans-serif" letter-spacing="2" text-anchor="middle">${textOverlay}</text>
-    </svg>`;
-  }
-
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(busSvg);
+// Renderização Caio Apache Vip V fidedigna
+function getBusSvg(bodyColor, stripeColor, isDD, label) {
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
+      <rect x="2" y="10" width="116" height="246" rx="14" fill="rgba(0,0,0,0.4)" filter="blur(4px)" />
+      <rect x="6" y="6" width="108" height="248" rx="14" fill="#1e293b" stroke="#0f172a" stroke-width="3"/>
+      <path d="M 8,20 C 8,10 20,8 60,8 C 100,8 112,10 112,20 L 112,238 C 112,246 100,252 60,252 C 20,252 8,246 8,238 Z" fill="${bodyColor}" />
+      <path d="M 8,110 L 112,110 L 112,240 C 112,246 100,250 60,250 C 20,250 8,246 8,240 Z" fill="#1d3557" />
+      <path d="M 8,140 L 112,140 L 112,240 C 112,246 100,250 60,250 C 20,250 8,246 8,240 Z" fill="#eaeaea" />
+      <path d="M 8,8 L 112,8 L 112,24 C 112,24 60,18 8,24 Z" fill="#ffb703" />
+      <rect x="28" y="30" width="64" height="200" rx="8" fill="#eaeaea" stroke="#cbd5e1" stroke-width="1.5" />
+      <rect x="42" y="125" width="36" height="42" rx="4" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2" />
+      <rect x="46" y="132" width="28" height="20" rx="2" fill="#475569" />
+      <line x1="50" y1="138" x2="70" y2="138" stroke="#ffffff" stroke-width="1" />
+      <line x1="50" y1="144" x2="70" y2="144" stroke="#ffffff" stroke-width="1" />
+      <rect x="48" y="55" width="24" height="20" rx="3" fill="#eaeaea" stroke="#94a3b8" stroke-width="2" />
+      <rect x="48" y="185" width="24" height="20" rx="3" fill="#eaeaea" stroke="#94a3b8" stroke-width="2" />
+      <rect x="10" y="82" width="8" height="152" rx="2" fill="#0f172a" />
+      <rect x="102" y="82" width="8" height="152" rx="2" fill="#0f172a" />
+      <path d="M 12,10 L 108,10 L 102,40 L 18,40 Z" fill="#0f172a" stroke="#eaeaea" stroke-width="1" />
+      <rect x="32" y="15" width="56" height="10" rx="2" fill="#334155" />
+      <text x="60" y="23" fill="#fbbf24" font-size="8" font-family="monospace" font-weight="900" text-anchor="middle">RODAP</text>
+      <path d="M 45,4 L 75,4 L 72,12 L 48,12 Z" fill="#0f172a" />
+      <rect x="2" y="28" width="5" height="14" rx="1.5" fill="#000000" />
+      <rect x="113" y="28" width="5" height="14" rx="1.5" fill="#000000" />
+      <line x1="7" y1="35" x2="15" y2="35" stroke="#000000" stroke-width="2" />
+      <line x1="113" y1="35" x2="105" y2="35" stroke="#000000" stroke-width="2" />
+      <path d="M 14,46 L 106,46 L 102,64 L 18,64 Z" fill="#1e293b" />
+      <path d="M 22,50 L 98,50 L 94,62 L 26,62 Z" fill="#ff7a00" />
+      <circle cx="60" cy="56" r="3.5" fill="#000000" stroke="#eaeaea" stroke-width="1" />
+      <rect x="16" y="246" width="14" height="6" fill="#ef4444" rx="1" />
+      <rect x="90" y="246" width="14" height="6" fill="#ef4444" rx="1" />
+      <text x="60" y="98" fill="#1d3557" font-size="8" font-weight="900" font-family="Arial" text-anchor="middle">29435</text>
+    </svg>
+  `);
 }
 
 function initMap(startCoords) {
+  if (map) {
+    map.remove();
+    map = null;
+  }
+
   map = new maplibregl.Map({
     container: 'map',
-    interactive: false,
     style: {
       version: 8,
       sources: {
         'google-hybrid-source': {
           type: 'raster',
           tiles: [
-            'https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-            'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-            'https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-            'https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+            'https://mt0.google.com/vt/lyrs=y,h&x={x}&y={y}&z={z}',
+            'https://mt1.google.com/vt/lyrs=y,h&x={x}&y={y}&z={z}',
+            'https://mt2.google.com/vt/lyrs=y,h&x={x}&y={y}&z={z}',
+            'https://mt3.google.com/vt/lyrs=y,h&x={x}&y={y}&z={z}'
           ],
           tileSize: 256,
           maxzoom: 22
         }
       },
-      layers: [
-        {
-          id: 'google-hybrid-layer',
-          type: 'raster',
-          source: 'google-hybrid-source',
-          minzoom: 0,
-          maxzoom: 22
-        }
-      ]
+      layers: [{ id: 'google-hybrid-layer', type: 'raster', source: 'google-hybrid-source', minzoom: 0, maxzoom: 22 }]
     },
     center: startCoords,
-    zoom: currentZoom,
-    pitch: currentPitch,
-    maxZoom: 22,
-    bearing: 0
+    zoom: 19.0,
+    pitch: 0,
+    bearing: smoothHeading
   });
 
   const preset = COLOR_PRESETS[activePresetKey] || COLOR_PRESETS['vermelho'];
-  const isDD = (currentGameMode === 'free');
+
+  if (currentVisibleMarker) {
+    currentVisibleMarker.remove();
+    currentVisibleMarker = null;
+  }
 
   const busImg = document.createElement('img');
   busImg.className = 'bus-marker-img';
-  busImg.src = getBusSvgDataUrl(preset.bodyColor, preset.stripeColor, isDD, busLabelText);
+  busImg.src = getBusSvg(preset.bodyColor, preset.stripeColor, currentGameMode === 'free', busLabelText);
 
-  busMarker = new maplibregl.Marker({ 
-    element: busImg, 
-    anchor: 'center' 
-  })
+  busMarker = new maplibregl.Marker({ element: busImg, anchor: 'center' })
     .setLngLat(startCoords)
     .addTo(map);
 
   map.on('load', () => {
-    animationFrameId = requestAnimationFrame(updatePhysics);
+    map.resize();
+    busMarker.setLngLat(startCoords);
+    lastFrameTime = performance.now();
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    animationFrameId = requestAnimationFrame(gameLoop);
   });
 }
 
-function updatePaxStatus() {
-  document.getElementById('paxCountDisplay').textContent = passengerCount;
-  const badge = document.getElementById('tripStatusBadge');
+function updateTripStatus() {
+  if (currentGameMode === 'line') {
+    document.getElementById('paxCountDisplay').textContent = passengerCount;
+    const percent = Math.round((passengerCount / maxPassengers) * 100);
+    const percentEl = document.getElementById('paxPercentDisplay');
+    percentEl.textContent = `${percent}%`;
 
-  if (passengerCount >= 1) {
+    if (percent > 85) percentEl.style.color = '#ef4444';
+    else if (percent > 50) percentEl.style.color = '#f59e0b';
+    else percentEl.style.color = '#10b981';
+  }
+
+  const badge = document.getElementById('tripStatusBadge');
+  if (!isTripActive && !isLineFinished) {
+    badge.className = 'trip-status-badge stopped';
+    badge.textContent = 'Aguardando Início';
+    btnTripToggle.className = 'btn-trip-toggle start';
+    btnTripToggle.textContent = '▶️ Dar Entrada na Viagem';
+  } else if (isAtBusStop) {
+    badge.className = 'trip-status-badge stopped';
+    badge.textContent = 'Parada Atendida';
+    btnTripToggle.className = 'btn-trip-toggle stop';
+    btnTripToggle.textContent = '🛑 Encerrar Viagem';
+  } else if (isLineFinished) {
+    badge.className = 'trip-status-badge stopped';
+    badge.textContent = 'Viagem Concluída';
+    btnTripToggle.className = 'btn-trip-toggle start';
+    btnTripToggle.textContent = '🔄 Reiniciar Viagem';
+  } else {
     badge.className = 'trip-status-badge running';
     badge.textContent = 'Em Viagem';
-    mapBanner.style.display = 'none';
-  } else {
-    badge.className = 'trip-status-badge stopped';
-    badge.textContent = 'Aguardando Pax';
-    mapBanner.style.display = 'block';
-    speed = 0;
+    btnTripToggle.className = 'btn-trip-toggle stop';
+    btnTripToggle.textContent = '🛑 Encerrar Viagem';
   }
-}
-
-document.getElementById('btnPaxAdd').addEventListener('pointerdown', (e) => {
-  e.stopPropagation();
-  if (passengerCount < maxPassengers) {
-    passengerCount++;
-    updatePaxStatus();
-  } else {
-    showAlert(`Lotação máxima atingida! (${maxPassengers} passageiros)`);
-  }
-});
-
-document.getElementById('btnPaxSub').addEventListener('pointerdown', (e) => {
-  e.stopPropagation();
-  if (passengerCount > 0) {
-    passengerCount--;
-    updatePaxStatus();
-  }
-});
-
-function getMetersBetween(coord1, coord2) {
-  const [lon1, lat1] = coord1;
-  const [lon2, lat2] = coord2;
-  const R = 6371e3;
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function handleAccelerate() {
-  if (passengerCount < 1) {
-    showAlert("⚠️ Adicione pelo menos 1 passageiro no painel para rodar!");
-    return;
+  if (!isTripActive && currentGameMode === 'line') {
+    isTripActive = true;
+    startTripTimer();
   }
-
-  if (speed < 0) {
-    speed = Math.min(speed + BRAKING_FORCE, 0);
-  } else if (speed < CRUISE_SPEED_UNITS) {
-    speed = CRUISE_SPEED_UNITS;
-  } else {
-    speed = Math.min(speed + ACCELERATION, MAX_SPEED_UNITS);
+  if (isAtBusStop) {
+    isAtBusStop = false;
+    mapBanner.style.display = 'none';
   }
+  isAutopilotMoving = true;
+  updateTripStatus();
 }
 
-function updatePhysics() {
+function processStop(stop) {
+  currentSpeedKmh = 0;
+  isAutopilotMoving = false;
+  isAtBusStop = true;
+  stop.visited = true;
+
+  // Remove o marcador da tela assim que atendido para manter a rota limpa
+  if (currentVisibleMarker) {
+    currentVisibleMarker.remove();
+    currentVisibleMarker = null;
+  }
+
+  const totalStops = activeStops.length;
+  const currentStopIdx = activeStops.findIndex(s => s.id === stop.id);
+  const isFinalStop = (currentStopIdx >= totalStops - 1);
+  const isNearEnd = (currentStopIdx >= Math.floor(totalStops * 0.75));
+
+  let embarque = 0;
+  let desembarque = 0;
+
+  if (isFinalStop) {
+    desembarque = passengerCount;
+    embarque = 0;
+  } else if (isNearEnd) {
+    desembarque = Math.floor(passengerCount * (0.35 + Math.random() * 0.35)) + 1;
+    embarque = Math.floor(Math.random() * 3);
+  } else {
+    const espacoDisponivel = maxPassengers - passengerCount;
+    embarque = Math.min(espacoDisponivel, Math.floor(Math.random() * 8) + 4);
+    desembarque = passengerCount > 0 ? Math.floor(Math.random() * 3) : 0;
+  }
+
+  passengerCount = Math.max(0, Math.min(maxPassengers, passengerCount - desembarque + embarque));
+
+  updateTripStatus();
+  updateStopInfoDisplay();
+}
+
+let lastFrameTime = performance.now();
+
+function gameLoop(now) {
   if (!map) return;
 
-  if (passengerCount >= 1) {
-    if (keysPressed.Up) {
-      handleAccelerate();
-      reverseDelayCounter = 0;
-    } else if (keysPressed.Down) {
-      if (speed > 0) {
-        speed = Math.max(speed - BRAKING_FORCE, 0);
-        reverseDelayCounter = 0;
+  const deltaTime = Math.min((now - lastFrameTime) / 1000, 0.1);
+  lastFrameTime = now;
+
+  const prev = [busLng, busLat];
+
+  if (currentGameMode === 'line') {
+    let desiredSpeed = 0;
+
+    if (isTripActive && isAutopilotMoving && !isAtBusStop && !isLineFinished) {
+      if (keysPressed.Down) {
+        desiredSpeed = 0;
+        currentSpeedKmh = Math.max(currentSpeedKmh - 50 * deltaTime, 0);
+        if (currentSpeedKmh <= 2) {
+          isAutopilotMoving = false;
+        }
+      } else if (keysPressed.Up) {
+        desiredSpeed = boostSpeedKmh;
       } else {
-        reverseDelayCounter++;
-        if (reverseDelayCounter > 30) {
-          speed = Math.max(speed - ACCELERATION, MAX_REVERSE_UNITS);
+        desiredSpeed = cruiseSpeedKmh;
+      }
+    }
+
+    if (currentSpeedKmh < desiredSpeed) {
+      currentSpeedKmh = Math.min(currentSpeedKmh + 32 * deltaTime, desiredSpeed);
+    } else if (currentSpeedKmh > desiredSpeed) {
+      currentSpeedKmh = Math.max(currentSpeedKmh - 22 * deltaTime, desiredSpeed);
+    }
+
+    if (currentSpeedKmh > 0 && !isAtBusStop && !isLineFinished && isTripActive) {
+      const speedMps = currentSpeedKmh / 3.6;
+      let remainingDistance = speedMps * deltaTime;
+
+      while (remainingDistance > 0 && currentSegIndex < activePath.length - 1) {
+        const p1 = activePath[currentSegIndex];
+        const p2 = activePath[currentSegIndex + 1];
+
+        if (currentSegLength <= 0) {
+          currentSegLength = getMetersBetween(p1, p2);
+        }
+
+        const distanceLeftInSeg = currentSegLength - segProgressMeters;
+
+        if (remainingDistance < distanceLeftInSeg) {
+          segProgressMeters += remainingDistance;
+          remainingDistance = 0;
+
+          const ratio = currentSegLength > 0 ? (segProgressMeters / currentSegLength) : 0;
+          busLng = p1[0] + (p2[0] - p1[0]) * ratio;
+          busLat = p1[1] + (p2[1] - p1[1]) * ratio;
+
+          targetHeading = calculateBearing(p1, p2);
+        } else {
+          remainingDistance -= distanceLeftInSeg;
+          currentSegIndex++;
+          segProgressMeters = 0;
+
+          if (currentSegIndex >= activePath.length - 1) {
+            busLng = activePath[activePath.length - 1][0];
+            busLat = activePath[activePath.length - 1][1];
+            isLineFinished = true;
+            isTripActive = false;
+            isAutopilotMoving = false;
+            currentSpeedKmh = 0;
+            passengerCount = 0;
+            stopTripTimer();
+            updateTripStatus();
+            break;
+          } else {
+            currentSegLength = getMetersBetween(activePath[currentSegIndex], activePath[currentSegIndex + 1]);
+            busLng = activePath[currentSegIndex][0];
+            busLat = activePath[currentSegIndex][1];
+            targetHeading = calculateBearing(activePath[currentSegIndex], activePath[currentSegIndex + 1]);
+          }
         }
       }
-    } else {
-      reverseDelayCounter = 0;
+
+      smoothHeading = lerpHeading(smoothHeading, targetHeading, 8.0 * deltaTime);
+
+      const nextStop = activeStops.find(s => !s.visited);
+      if (nextStop) {
+        const distToStop = getMetersBetween([busLng, busLat], nextStop.coords);
+        if (distToStop < 10.0 || (currentSegIndex >= nextStop.targetPathIndex && distToStop < 25.0)) {
+          processStop(nextStop);
+        }
+      }
     }
-
-    if (Math.abs(speed) > 0.05) {
-      const turnDir = speed < 0 ? -1 : 1;
-      if (keysPressed.Left) heading = (heading - turnDir * ROTATION_SPEED + 360) % 360;
-      if (keysPressed.Right) heading = (heading + turnDir * ROTATION_SPEED) % 360;
-    }
-
-    const rad = (heading * Math.PI) / 180;
-    const deltaLng = (speed * 0.000003) * Math.sin(rad);
-    const deltaLat = (speed * 0.000003) * Math.cos(rad);
-
-    const prevCoords = [busLng, busLat];
-    busLng += deltaLng;
-    busLat += deltaLat;
-
-    distanceCoveredKm += getMetersBetween(prevCoords, [busLng, busLat]) / 1000;
-    document.getElementById('kmCoveredDisplay').textContent = `${distanceCoveredKm.toFixed(2)} km`;
   } else {
-    speed = 0;
-    reverseDelayCounter = 0;
+    // MODO LIVRE (FÍSICA SUAVIZADA SEM TREMEDEIRA E SEM PASSAGEIROS)
+    let desiredSpeed = 0;
+    if (keysPressed.Down) {
+      currentSpeedKmh = Math.max(currentSpeedKmh - 50 * deltaTime, 0);
+      desiredSpeed = 0;
+    } else if (keysPressed.Up) {
+      desiredSpeed = boostSpeedKmh;
+    } else if (currentSpeedKmh > 0) {
+      desiredSpeed = cruiseSpeedKmh;
+    }
+
+    if (currentSpeedKmh < desiredSpeed) currentSpeedKmh = Math.min(currentSpeedKmh + 30 * deltaTime, desiredSpeed);
+    else if (currentSpeedKmh > desiredSpeed && desiredSpeed > 0) currentSpeedKmh = Math.max(currentSpeedKmh - 20 * deltaTime, desiredSpeed);
+
+    if (currentSpeedKmh < 0.1) {
+      currentSpeedKmh = 0;
+    }
+
+    if (currentSpeedKmh > 1) {
+      if (keysPressed.Left) smoothHeading = (smoothHeading - 60 * deltaTime + 360) % 360;
+      if (keysPressed.Right) smoothHeading = (smoothHeading + 60 * deltaTime) % 360;
+    }
+
+    if (currentSpeedKmh > 0) {
+      const speedMps = currentSpeedKmh / 3.6;
+      const metersToMove = speedMps * deltaTime;
+      const metersPerDegreeLat = 111320;
+      const metersPerDegreeLng = 111320 * Math.cos(busLat * (Math.PI / 180));
+
+      const rad = (smoothHeading * Math.PI) / 180;
+      busLng += (metersToMove * Math.sin(rad)) / metersPerDegreeLng;
+      busLat += (metersToMove * Math.cos(rad)) / metersPerDegreeLat;
+    }
   }
 
-  const kmhDisplay = Math.round(Math.abs(speed) * KMH_CONVERSION_FACTOR);
-  document.getElementById('speedValue').textContent = kmhDisplay;
+  const distStep = getMetersBetween(prev, [busLng, busLat]) / 1000;
+  if (!isNaN(distStep)) {
+    distanceCoveredKm += distStep;
+  }
+
+  const distFormatted = `${distanceCoveredKm.toFixed(2)} km`;
+  document.getElementById('kmCoveredDisplay').textContent = distFormatted;
+  document.getElementById('miniKmDisplay').textContent = distFormatted;
+  document.getElementById('speedValue').textContent = Math.round(currentSpeedKmh);
 
   const currentCoords = [busLng, busLat];
-  if (busMarker) busMarker.setLngLat(currentCoords);
-
-  if (map) {
-    map.jumpTo({
-      center: currentCoords,
-      zoom: currentZoom,
-      pitch: currentPitch,
-      bearing: heading
-    });
+  if (busMarker) {
+    busMarker.setLngLat(currentCoords);
   }
 
-  animationFrameId = requestAnimationFrame(updatePhysics);
+  // Atualiza aparição do próximo ponto por proximidade (menos de 100m)
+  atualizarMarcadorProximoPonto(currentCoords);
+
+  map.jumpTo({
+    center: currentCoords,
+    bearing: smoothHeading
+  });
+
+  animationFrameId = requestAnimationFrame(gameLoop);
 }
 
 document.getElementById('btnZoomNear').addEventListener('pointerdown', (e) => {
   e.stopPropagation();
-  currentZoom = CAMERA_SETTINGS.NEAR.zoom;
-  currentPitch = CAMERA_SETTINGS.NEAR.pitch;
+  map.setZoom(19.2);
   document.getElementById('btnZoomNear').classList.add('active');
   document.getElementById('btnZoomFar').classList.remove('active');
 });
 
 document.getElementById('btnZoomFar').addEventListener('pointerdown', (e) => {
   e.stopPropagation();
-  currentZoom = CAMERA_SETTINGS.FAR.zoom;
-  currentPitch = CAMERA_SETTINGS.FAR.pitch;
+  map.setZoom(17.4);
   document.getElementById('btnZoomFar').classList.add('active');
   document.getElementById('btnZoomNear').classList.remove('active');
 });
 
 window.addEventListener('keydown', (e) => {
   if (['ArrowUp', 'KeyW'].includes(e.code)) {
-    if (!keysPressed.Up) {
-      handleAccelerate();
-    }
+    if (!keysPressed.Up) handleAccelerate();
     keysPressed.Up = true;
   }
   if (['ArrowDown', 'KeyS'].includes(e.code)) keysPressed.Down = true;
