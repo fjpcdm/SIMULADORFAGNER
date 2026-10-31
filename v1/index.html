@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Simulador de Ônibus Urbano e Rodoviário</title>
+
+  <!-- Folha de estilo do MapLibre GL -->
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box !important;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
+      overflow: hidden !important;
+      background-color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Biblioteca MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <!-- 1º Carrega o banco de linhas -->
+  <script src="dados_rotas.js"></script>
+  <!-- Script do Jogo -->
+  <script src="script.js"></script>
+</body>
+</html>
