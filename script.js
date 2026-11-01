@@ -383,27 +383,28 @@ const cssStyles = `
 
   .mobile-controls-left {
     position: absolute !important;
-    bottom: 20px !important;
+    bottom: 30px !important;
     left: 15px !important;
     z-index: 999999 !important;
     display: flex;
     gap: 10px;
   }
 
+  /* BOTÕES MOBILE MAIS ACIMA CONFORME SOLICITADO */
   .mobile-controls-right {
     position: absolute !important;
-    bottom: 20px !important;
+    bottom: 85px !important;
     right: 15px !important;
     z-index: 999999 !important;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
   }
 
   .btn-drive-touch {
-    width: 58px;
-    height: 58px;
-    background: rgba(15, 23, 42, 0.75);
+    width: 62px;
+    height: 62px;
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border: 2px solid #38bdf8;
@@ -414,6 +415,7 @@ const cssStyles = `
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
 
   .btn-drive-touch:active {
@@ -423,16 +425,16 @@ const cssStyles = `
 
   .btn-drive-touch.btn-accel {
     border-color: #10b981;
-    background: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.45);
   }
 
   .btn-drive-touch.btn-accel:active {
-    background: rgba(16, 185, 129, 0.7);
+    background: rgba(16, 185, 129, 0.8);
   }
 
   .btn-drive-touch.btn-brake {
     border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.45);
   }
 
   .alert-toast {
@@ -509,10 +511,14 @@ const cssStyles = `
       font-size: 1.4rem !important;
     }
 
+    .mobile-controls-right {
+      bottom: 90px !important;
+    }
+
     .btn-drive-touch {
-      width: 54px;
-      height: 54px;
-      font-size: 1.25rem;
+      width: 58px;
+      height: 58px;
+      font-size: 1.3rem;
     }
   }
 `;
@@ -720,12 +726,12 @@ document.body.appendChild(rightControlsContainer);
 let map = null;
 let busMarker = null;
 let animationFrameId = null;
-let currentVisibleMarker = null; // Guarda o marcador do ponto ativo
+let currentVisibleMarker = null;
 
 let currentGameMode = 'line'; 
 let busLabelText = '';
 let passengerCount = 10;
-let maxPassengers = 70; // 70 Urbano | 42 Rodoviário
+let maxPassengers = 70;
 let activePresetKey = 'vermelho';
 
 let activePath = [];
@@ -753,6 +759,10 @@ let isTripActive = false;
 
 let tripStartTime = null;
 let tripTimerInterval = null;
+
+// Variáveis para controlar paragens obrigatórias e tempos especiais
+let stopHoldTimer = null;
+let isHoldingAtStop = false;
 
 const keysPressed = { Up: false, Down: false, Left: false, Right: false };
 
@@ -806,7 +816,6 @@ function stopTripTimer() {
   }
 }
 
-// Botão para abrir/fechar painel no celular
 document.getElementById('btnToggleHud').addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   hudContainer.classList.toggle('mobile-visible');
@@ -928,6 +937,7 @@ document.getElementById('btnStartLineMode').addEventListener('click', () => {
   isAutopilotMoving = false;
   currentSpeedKmh = 0;
   distanceCoveredKm = 0;
+  isHoldingAtStop = false;
 
   targetHeading = calculateBearing(activePath[0], activePath[1]);
   smoothHeading = targetHeading;
@@ -1003,7 +1013,6 @@ function updateStopInfoDisplay() {
   `;
 }
 
-// ATUALIZAÇÃO DINÂMICA DO MARCADOR POR PROXIMIDADE (MENOS DE 100M)
 function atualizarMarcadorProximoPonto(busCoords) {
   if (currentGameMode !== 'line' || !map) return;
 
@@ -1019,7 +1028,6 @@ function atualizarMarcadorProximoPonto(busCoords) {
 
   const distToStop = getMetersBetween(busCoords, nextStop.coords);
 
-  // Aparece apenas se estiver a menos de 100 metros
   if (distToStop <= 100.0) {
     if (!currentVisibleMarker || currentVisibleMarker._stopId !== nextStop.id) {
       if (currentVisibleMarker) currentVisibleMarker.remove();
@@ -1034,7 +1042,6 @@ function atualizarMarcadorProximoPonto(busCoords) {
       currentVisibleMarker._stopId = nextStop.id;
     }
   } else {
-    // Esconde caso ainda esteja distante
     if (currentVisibleMarker) {
       currentVisibleMarker.remove();
       currentVisibleMarker = null;
@@ -1044,6 +1051,7 @@ function atualizarMarcadorProximoPonto(busCoords) {
 
 function exitGame() {
   stopTripTimer();
+  if (stopHoldTimer) clearTimeout(stopHoldTimer);
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
@@ -1063,6 +1071,7 @@ function exitGame() {
   currentSpeedKmh = 0;
   isAutopilotMoving = false;
   isTripActive = false;
+  isHoldingAtStop = false;
   targetHeading = 0;
   smoothHeading = 0;
   distanceCoveredKm = 0;
@@ -1085,7 +1094,6 @@ function exitGame() {
 
 document.getElementById('btnExitGame').addEventListener('click', exitGame);
 
-// Renderização Caio Apache Vip V fidedigna
 function getBusSvg(bodyColor, stripeColor, isDD, label) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 260" width="120" height="260">
@@ -1218,7 +1226,7 @@ function handleAccelerate() {
     isTripActive = true;
     startTripTimer();
   }
-  if (isAtBusStop) {
+  if (isAtBusStop && !isHoldingAtStop) {
     isAtBusStop = false;
     mapBanner.style.display = 'none';
   }
@@ -1227,41 +1235,72 @@ function handleAccelerate() {
 }
 
 function processStop(stop) {
-  currentSpeedKmh = 0;
-  isAutopilotMoving = false;
-  isAtBusStop = true;
   stop.visited = true;
 
-  // Remove o marcador da tela assim que atendido para manter a rota limpa
   if (currentVisibleMarker) {
     currentVisibleMarker.remove();
     currentVisibleMarker = null;
   }
 
-  const totalStops = activeStops.length;
-  const currentStopIdx = activeStops.findIndex(s => s.id === stop.id);
-  const isFinalStop = (currentStopIdx >= totalStops - 1);
-  const isNearEnd = (currentStopIdx >= Math.floor(totalStops * 0.75));
+  const nomePonto = (stop.nome || "").toLowerCase();
 
-  let embarque = 0;
-  let desembarque = 0;
-
-  if (isFinalStop) {
-    desembarque = passengerCount;
-    embarque = 0;
-  } else if (isNearEnd) {
-    desembarque = Math.floor(passengerCount * (0.35 + Math.random() * 0.35)) + 1;
-    embarque = Math.floor(Math.random() * 3);
-  } else {
-    const espacoDisponivel = maxPassengers - passengerCount;
-    embarque = Math.min(espacoDisponivel, Math.floor(Math.random() * 8) + 4);
-    desembarque = passengerCount > 0 ? Math.floor(Math.random() * 3) : 0;
+  // REGRAS ESPECIAIS SOLICITADAS:
+  // 1. SENAC: Esvaziar o ônibus 100% (passageiros = 0) e parada breve
+  if (nomePonto.includes("senac")) {
+    passengerCount = 0;
+    showAlert("🚏 SENAC: Desembarque total de passageiros.");
+    atenderParadaTemporizada(5000);
+    return;
   }
 
-  passengerCount = Math.max(0, Math.min(maxPassengers, passengerCount - desembarque + embarque));
+  // 2. Olegário Maciel: Paragem obrigatória de 1m30s (90 segundos) para retorno
+  if (nomePonto.includes("olegario")) {
+    passengerCount = 0; // Opcional ou embarque novo para o retorno
+    const embarqueRetorno = Math.floor(Math.random() * 20) + 10;
+    passengerCount = Math.min(maxPassengers, embarqueRetorno);
+    showAlert("🚏 Olegário Maciel: Início do retorno. Paragem obrigatória de 1m30s.");
+    atenderParadaTemporizada(90000); // 90.000 ms = 1 minuto e 30 segundos
+    return;
+  }
 
+  // 3. Terminais de Início / Fim
+  if (nomePonto.includes("terminal")) {
+    passengerCount = nomePonto.includes("inicio") ? Math.floor(maxPassengers * 0.2) : 0;
+    atenderParadaTemporizada(10000);
+    return;
+  }
+
+  // 4. Demais paragens comuns: O autocarro não para obrigatoriamente em todas. 
+  // Decide aleatoriamente se para (30% de chance) ou passa direto (70%).
+  if (Math.random() < 0.30) {
+    const espaco = maxPassengers - passengerCount;
+    const emb = Math.min(espaco, Math.floor(Math.random() * 6) + 2);
+    const des = passengerCount > 0 ? Math.floor(Math.random() * 2) : 0;
+    passengerCount = Math.max(0, Math.min(maxPassengers, passengerCount - des + emb));
+    atenderParadaTemporizada(4000);
+  } else {
+    // Passa direto sem parar
+    updateStopInfoDisplay();
+  }
+}
+
+function atenderParadaTemporizada(tempoMs) {
+  currentSpeedKmh = 0;
+  isAutopilotMoving = false;
+  isAtBusStop = true;
+  isHoldingAtStop = true;
   updateTripStatus();
   updateStopInfoDisplay();
+
+  if (stopHoldTimer) clearTimeout(stopHoldTimer);
+
+  stopHoldTimer = setTimeout(() => {
+    isHoldingAtStop = false;
+    isAtBusStop = false;
+    isAutopilotMoving = true;
+    updateTripStatus();
+    updateStopInfoDisplay();
+  }, tempoMs);
 }
 
 let lastFrameTime = performance.now();
@@ -1356,7 +1395,6 @@ function gameLoop(now) {
       }
     }
   } else {
-    // MODO LIVRE (FÍSICA SUAVIZADA SEM TREMEDEIRA E SEM PASSAGEIROS)
     let desiredSpeed = 0;
     if (keysPressed.Down) {
       currentSpeedKmh = Math.max(currentSpeedKmh - 50 * deltaTime, 0);
@@ -1406,7 +1444,6 @@ function gameLoop(now) {
     busMarker.setLngLat(currentCoords);
   }
 
-  // Atualiza aparição do próximo ponto por proximidade (menos de 100m)
   atualizarMarcadorProximoPonto(currentCoords);
 
   map.jumpTo({
